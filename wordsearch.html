@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wortsuche – Aurubis Lernspiele</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .ws-layout {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 720px) { .ws-layout { grid-template-columns: 1fr; } }
+
+    #wsGrid {
+      display: inline-grid;
+      gap: 2px;
+      background: var(--aurubis-grey-light);
+      border: 2px solid var(--aurubis-grey-mid);
+      border-radius: 10px;
+      padding: 10px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .ws-cell {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+      border-radius: 4px;
+      cursor: pointer;
+      background: white;
+      color: var(--aurubis-grey-dark);
+      transition: background 0.15s;
+      text-transform: uppercase;
+      border: 1px solid var(--aurubis-grey-light);
+    }
+    @media (max-width: 480px) {
+      .ws-cell { width: 24px; height: 24px; font-size: 11px; }
+    }
+    .ws-cell.selecting { background: rgba(232,119,34,0.3); color: var(--aurubis-blue-dark); }
+    .ws-cell.found { background: var(--aurubis-orange); color: white; }
+    .ws-cell.found-alt { background: var(--aurubis-blue-mid); color: white; }
+    .ws-cell.found-2 { background: #22c55e; color: white; }
+    .ws-cell.found-3 { background: #a855f7; color: white; }
+    .ws-cell.found-4 { background: #ec4899; color: white; }
+    .ws-cell.found-5 { background: #f97316; color: white; }
+    .ws-cell.found-6 { background: #14b8a6; color: white; }
+
+    .word-list { display: flex; flex-direction: column; gap: 6px; }
+    .word-item {
+      background: white;
+      border: 2px solid var(--aurubis-grey-mid);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--aurubis-grey-dark);
+      cursor: default;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .word-item.found {
+      background: #d4f8e8;
+      border-color: #22c55e;
+      color: #14532d;
+      text-decoration: line-through;
+    }
+    .word-item .w-icon { font-size: 16px; flex-shrink: 0; }
+    .word-item .w-text { flex: 1; }
+    .word-item .w-hint { font-size: 11px; font-weight: 400; color: var(--aurubis-grey); margin-top: 2px; }
+
+    .ws-progress {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--aurubis-blue);
+      margin-bottom: 8px;
+    }
+
+    .direction-badge {
+      display: inline-block;
+      background: rgba(0,60,113,0.1);
+      color: var(--aurubis-blue);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .ws-hint-box {
+      background: rgba(232,119,34,0.08);
+      border: 1px solid rgba(232,119,34,0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--aurubis-grey-dark);
+      margin-top: 12px;
+      line-height: 1.5;
+      min-height: 44px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo-area">
+      <div class="logo-icon">Au</div>
+      <div class="logo-text">
+        <span class="brand">Aurubis Lernspiele</span>
+        <span class="tagline">Deutsch lernen mit Kupfer</span>
+      </div>
+    </a>
+    <nav class="header-nav">
+      <a href="index.html">Startseite</a>
+      <a href="quiz.html">Quiz</a>
+      <a href="memory.html">Memory</a>
+      <a href="wordsearch.html" class="active">Wortsuche</a>
+      <a href="lueckentext.html">Lückentext</a>
+    </nav>
+  </div>
+</header>
+<div class="accent-bar"></div>
+
+<main>
+  <div class="game-page" style="max-width:960px;">
+    <a href="index.html" class="back-link">Zurück zur Startseite</a>
+
+    <div class="game-panel">
+      <div class="game-panel-header">
+        <div class="icon">🔍</div>
+        <div>
+          <h2>Wortsuche</h2>
+          <p>Finde alle versteckten Aurubis-Fachbegriffe im Buchstabenraster</p>
+        </div>
+      </div>
+
+      <div class="game-panel-body" id="wsSteup">
+        <div class="score-bar" style="margin-bottom:16px;">
+          <div class="score-item">
+            <span class="score-value" id="wsFound">0</span>
+            <span class="score-label">Gefunden</span>
+          </div>
+          <div class="score-item">
+            <span class="score-value" id="wsTotal">0</span>
+            <span class="score-label">Gesamt</span>
+          </div>
+          <div class="score-item">
+            <span class="score-value" id="wsTimer">0:00</span>
+            <span class="score-label">Zeit</span>
+          </div>
+          <button class="btn btn-outline btn-sm" id="wsNewGame">Neues Spiel</button>
+        </div>
+
+        <div class="ws-hint-box" id="wsHintBox">
+          💡 Klicke auf den ersten Buchstaben eines Wortes, dann auf den letzten. Wörter können horizontal, vertikal und diagonal versteckt sein.
+        </div>
+
+        <div class="copper-line"></div>
+
+        <div class="ws-layout">
+          <div>
+            <div id="wsGrid"></div>
+          </div>
+          <div>
+            <p class="ws-progress" id="wsProgressText">Gefunden: 0 von 0</p>
+            <div class="progress-wrap" style="margin-bottom:14px;">
+              <div class="progress-fill" id="wsProgressBar" style="width:0%"></div>
+            </div>
+            <div class="word-list" id="wsWordList"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="result-screen" id="wsResult" style="display:none; padding:40px 28px;">
+        <div class="result-icon">🔍</div>
+        <h3>Alle Wörter gefunden!</h3>
+        <div class="final-score" id="wsFinalTime"></div>
+        <p id="wsResultMsg"></p>
+        <div class="result-actions">
+          <button class="btn btn-primary" id="wsReplay">Neues Spiel</button>
+          <a href="index.html" class="btn btn-secondary">Andere Spiele</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>Aurubis Lernspiele – Erstellt zu Bildungszwecken &nbsp;|&nbsp; <a href="https://www.aurubis.com" target="_blank" rel="noopener">aurubis.com</a></p>
+</footer>
+
+<script src="vocabulary.js"></script>
+<script>
+// Words to place (short forms of terms, uppercase, no spaces/umlauts replaced)
+const WS_WORDS = [
+  { word: 'KATHODE',      hint: 'Negativ geladene Elektrode bei der Elektrolyse' },
+  { word: 'ANODE',        hint: 'Positiv geladene Elektrode bei der Elektrolyse' },
+  { word: 'ELEKTROLYSE',  hint: 'Verfahren zur Kupferreinigung durch Strom' },
+  { word: 'RECYCLING',    hint: 'Wiederaufbereitung von Kupferschrott' },
+  { word: 'RAFFINIERUNG', hint: 'Reinigung von Rohkupfer auf 99,99 %' },
+  { word: 'SCHLACKE',     hint: 'Rückstand beim Schmelzen von Erzen' },
+  { word: 'LEGIERUNG',    hint: 'Gemisch aus mehreren Metallen' },
+  { word: 'ROHSTOFF',     hint: 'Naturmaterial für die Produktion' },
+  { word: 'FLOTATION',    hint: 'Aufbereitungsverfahren für Erze' },
+  { word: 'WALZDRAHT',    hint: 'Dünner Kupferdraht durch Walzen hergestellt' },
+];
+
+const GRID_SIZE = 18;
+let grid = [];
+let placed = [];
+let selStart = null;
+let foundCount = 0;
+let totalWords = 0;
+let timerSec = 0;
+let timerInt = null;
+let foundColors = {};
+let colorIdx = 0;
+const FOUND_CLASSES = ['found','found-alt','found-2','found-3','found-4','found-5','found-6'];
+
+function initGrid() {
+  grid = Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(''));
+  placed = [];
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Umlauts for display in word list, but simplified in grid
+function simplify(str) {
+  return str.toUpperCase()
+    .replace(/Ä/g,'AE').replace(/Ö/g,'OE').replace(/Ü/g,'UE').replace(/ß/g,'SS')
+    .replace(/[^A-Z]/g,'');
+}
+
+const DIRS = [
+  [0,1], [1,0], [1,1], [1,-1],
+  [0,-1], [-1,0], [-1,-1], [-1,1]
+];
+
+function canPlace(word, row, col, dr, dc) {
+  for (let i = 0; i < word.length; i++) {
+    const r = row + dr * i, c = col + dc * i;
+    if (r < 0 || r >= GRID_SIZE || c < 0 || c >= GRID_SIZE) return false;
+    if (grid[r][c] !== '' && grid[r][c] !== word[i]) return false;
+  }
+  return true;
+}
+
+function placeWord(word, row, col, dr, dc) {
+  const cells = [];
+  for (let i = 0; i < word.length; i++) {
+    const r = row + dr * i, c = col + dc * i;
+    grid[r][c] = word[i];
+    cells.push([r, c]);
+  }
+  return cells;
+}
+
+function buildGrid() {
+  initGrid();
+  const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const wordsToPlace = WS_WORDS.map(w => ({ ...w, simple: simplify(w.word) }));
+
+  for (const item of wordsToPlace) {
+    const word = item.simple;
+    let placed = false;
+    const dirShuffled = shuffle(DIRS);
+    for (let attempt = 0; attempt < 300 && !placed; attempt++) {
+      const [dr, dc] = dirShuffled[attempt % dirShuffled.length];
+      const row = Math.floor(Math.random() * GRID_SIZE);
+      const col = Math.floor(Math.random() * GRID_SIZE);
+      if (canPlace(word, row, col, dr, dc)) {
+        const cells = placeWord(word, row, col, dr, dc);
+        item.cells = cells;
+        item.placed = true;
+        placed = true;
+      }
+    }
+    if (!item.placed) item.cells = [];
+  }
+
+  // Fill blanks
+  for (let r = 0; r < GRID_SIZE; r++)
+    for (let c = 0; c < GRID_SIZE; c++)
+      if (!grid[r][c]) grid[r][c] = ALPHA[Math.floor(Math.random() * ALPHA.length)];
+
+  return wordsToPlace;
+}
+
+function startWS() {
+  foundCount = 0; colorIdx = 0; foundColors = {};
+  timerSec = 0; selStart = null;
+  clearInterval(timerInt);
+
+  const wordsToPlace = buildGrid();
+  placed = wordsToPlace;
+  totalWords = placed.filter(w => w.placed).length;
+
+  document.getElementById('wsFound').textContent = 0;
+  document.getElementById('wsTotal').textContent = totalWords;
+  document.getElementById('wsTimer').textContent = '0:00';
+  document.getElementById('wsProgressText').textContent = `Gefunden: 0 von ${totalWords}`;
+  document.getElementById('wsProgressBar').style.width = '0%';
+  document.getElementById('wsHintBox').innerHTML =
+    '💡 Klicke auf den ersten Buchstaben eines Wortes, dann auf den letzten. Wörter können horizontal, vertikal und diagonal versteckt sein.';
+
+  renderGrid();
+  renderWordList();
+
+  timerInt = setInterval(() => {
+    timerSec++;
+    const m = Math.floor(timerSec / 60), s = timerSec % 60;
+    document.getElementById('wsTimer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  }, 1000);
+
+  document.getElementById('wsResult').style.display = 'none';
+  document.getElementById('wsSteup').style.display = 'block';
+}
+
+function renderGrid() {
+  const el = document.getElementById('wsGrid');
+  el.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+  el.innerHTML = '';
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'ws-cell';
+      cell.textContent = grid[r][c];
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.addEventListener('click', () => handleCellClick(r, c, cell));
+      el.appendChild(cell);
+    }
+  }
+}
+
+function renderWordList() {
+  const el = document.getElementById('wsWordList');
+  el.innerHTML = '';
+  placed.filter(w => w.placed).forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'word-item';
+    div.id = `witem-${i}`;
+    div.innerHTML = `<span class="w-icon">🔎</span><div><div class="w-text">${item.word}</div><div class="w-hint">${item.hint}</div></div>`;
+    el.appendChild(div);
+  });
+}
+
+function getCellEl(r, c) {
+  return document.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+}
+
+function clearSelecting() {
+  document.querySelectorAll('.ws-cell.selecting').forEach(el => el.classList.remove('selecting'));
+}
+
+function getCellsBetween(r1, c1, r2, c2) {
+  const dr = Math.sign(r2 - r1), dc = Math.sign(c2 - c1);
+  if (r1 === r2 && c1 === c2) return [[r1, c1]];
+  // Must be straight line
+  const lenR = Math.abs(r2 - r1), lenC = Math.abs(c2 - c1);
+  if (lenR !== 0 && lenC !== 0 && lenR !== lenC) return null;
+  const cells = [];
+  let r = r1, c = c1;
+  while (true) {
+    cells.push([r, c]);
+    if (r === r2 && c === c2) break;
+    r += dr; c += dc;
+  }
+  return cells;
+}
+
+function handleCellClick(r, c, cellEl) {
+  if (!selStart) {
+    clearSelecting();
+    selStart = { r, c };
+    cellEl.classList.add('selecting');
+    return;
+  }
+
+  const cells = getCellsBetween(selStart.r, selStart.c, r, c);
+  if (!cells) {
+    clearSelecting();
+    selStart = { r, c };
+    cellEl.classList.add('selecting');
+    return;
+  }
+
+  const selected = cells.map(([cr, cc]) => grid[cr][cc]).join('');
+  const reversed = selected.split('').reverse().join('');
+
+  clearSelecting();
+  selStart = null;
+
+  // Check against placed words
+  let foundItem = null;
+  let foundIdx = -1;
+  placed.filter(w => w.placed).forEach((item, i) => {
+    const simple = simplify(item.word);
+    if ((selected === simple || reversed === simple) && !item.found) {
+      // Verify cells match
+      const match = checkCellsMatch(cells, item.cells) || checkCellsMatch(cells, [...item.cells].reverse());
+      if (match) { foundItem = item; foundIdx = i; }
+    }
+  });
+
+  if (foundItem) {
+    foundItem.found = true;
+    const cls = FOUND_CLASSES[colorIdx % FOUND_CLASSES.length];
+    colorIdx++;
+    foundItem.cells.forEach(([cr, cc]) => {
+      const el = getCellEl(cr, cc);
+      if (el) { el.className = `ws-cell ${cls}`; }
+    });
+    const witem = document.getElementById(`witem-${foundIdx}`);
+    if (witem) {
+      witem.classList.add('found');
+      witem.querySelector('.w-icon').textContent = '✓';
+    }
+    foundCount++;
+    document.getElementById('wsFound').textContent = foundCount;
+    document.getElementById('wsProgressText').textContent = `Gefunden: ${foundCount} von ${totalWords}`;
+    document.getElementById('wsProgressBar').style.width = `${(foundCount / totalWords) * 100}%`;
+    document.getElementById('wsHintBox').innerHTML = `✅ <strong>${foundItem.word}</strong> gefunden! – ${foundItem.hint}`;
+
+    if (foundCount >= totalWords) {
+      clearInterval(timerInt);
+      setTimeout(showWSResult, 600);
+    }
+  } else {
+    // Highlight selection briefly as wrong
+    cells.forEach(([cr, cc]) => {
+      const el = getCellEl(cr, cc);
+      if (el && !el.className.includes('found')) {
+        el.style.background = '#fee2e2';
+        setTimeout(() => { el.style.background = ''; }, 500);
+      }
+    });
+    document.getElementById('wsHintBox').textContent = '❌ Kein Wort gefunden. Probiere es nochmal!';
+  }
+}
+
+function checkCellsMatch(sel, target) {
+  if (sel.length !== target.length) return false;
+  return sel.every(([r, c], i) => target[i][0] === r && target[i][1] === c);
+}
+
+function showWSResult() {
+  document.getElementById('wsSteup').style.display = 'none';
+  document.getElementById('wsResult').style.display = 'block';
+  const m = Math.floor(timerSec / 60), s = timerSec % 60;
+  document.getElementById('wsFinalTime').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  let msg = timerSec < 120
+    ? 'Beeindruckend! Du kennst dich in der Aurubis-Welt wirklich aus!'
+    : timerSec < 300
+    ? 'Sehr gut! Du hast alle Wörter gefunden. Übe weiter!'
+    : 'Geschafft! Alle Wörter gefunden. Beim nächsten Mal wird es schneller!';
+  document.getElementById('wsResultMsg').textContent = msg;
+}
+
+document.getElementById('wsNewGame').addEventListener('click', startWS);
+document.getElementById('wsReplay').addEventListener('click', startWS);
+
+startWS();
+</script>
+
+</body>
+</html>

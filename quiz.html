@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vokabel-Quiz – Aurubis Lernspiele</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .quiz-question {
+      background: linear-gradient(135deg, var(--aurubis-blue) 0%, var(--aurubis-blue-mid) 100%);
+      color: var(--aurubis-white);
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .question-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+    .question-text {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+    .question-hint {
+      margin-top: 8px;
+      font-size: 13px;
+      opacity: 0.7;
+      font-style: italic;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 540px) { .options-grid { grid-template-columns: 1fr; } }
+
+    .option-btn {
+      background: var(--aurubis-grey-light);
+      border: 2px solid var(--aurubis-grey-mid);
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-align: left;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--aurubis-grey-dark);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.4;
+    }
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--aurubis-orange);
+      background: rgba(232,119,34,0.06);
+      transform: translateY(-2px);
+    }
+    .option-btn .opt-letter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--aurubis-grey-mid);
+      color: var(--aurubis-grey-dark);
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .option-btn:hover:not(:disabled) .opt-letter {
+      background: var(--aurubis-orange);
+      color: white;
+    }
+    .option-btn.correct {
+      background: #d4f8e8;
+      border-color: #22c55e;
+      color: #14532d;
+    }
+    .option-btn.correct .opt-letter { background: #22c55e; color: white; }
+    .option-btn.wrong {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #7f1d1d;
+    }
+    .option-btn.wrong .opt-letter { background: #ef4444; color: white; }
+    .option-btn:disabled { cursor: not-allowed; }
+
+    .feedback-box {
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      display: none;
+    }
+    .feedback-box.correct {
+      background: #d4f8e8;
+      border-left: 4px solid #22c55e;
+      color: #14532d;
+      display: block;
+    }
+    .feedback-box.wrong {
+      background: #fee2e2;
+      border-left: 4px solid #ef4444;
+      color: #7f1d1d;
+      display: block;
+    }
+    .feedback-box .fb-title { font-weight: 700; margin-bottom: 6px; font-size: 15px; }
+    .feedback-box .fb-def {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      font-style: italic;
+    }
+
+    .quiz-controls { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+    .mode-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .mode-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 2px solid var(--aurubis-grey-mid);
+      background: white;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--aurubis-grey);
+      transition: all 0.2s;
+    }
+    .mode-btn.active {
+      border-color: var(--aurubis-orange);
+      background: var(--aurubis-orange);
+      color: white;
+    }
+    .mode-btn:hover:not(.active) { border-color: var(--aurubis-orange); color: var(--aurubis-orange); }
+
+    .category-tag {
+      display: inline-block;
+      background: rgba(232,119,34,0.15);
+      color: var(--aurubis-orange-dark);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo-area">
+      <div class="logo-icon">Au</div>
+      <div class="logo-text">
+        <span class="brand">Aurubis Lernspiele</span>
+        <span class="tagline">Deutsch lernen mit Kupfer</span>
+      </div>
+    </a>
+    <nav class="header-nav">
+      <a href="index.html">Startseite</a>
+      <a href="quiz.html" class="active">Quiz</a>
+      <a href="memory.html">Memory</a>
+      <a href="wordsearch.html">Wortsuche</a>
+      <a href="lueckentext.html">Lückentext</a>
+    </nav>
+  </div>
+</header>
+<div class="accent-bar"></div>
+
+<main>
+  <div class="game-page">
+    <a href="index.html" class="back-link">Zurück zur Startseite</a>
+
+    <div class="game-panel">
+      <div class="game-panel-header">
+        <div class="icon">🧠</div>
+        <div>
+          <h2>Vokabel-Quiz</h2>
+          <p>Wähle die richtige Antwort – Teste dein Wissen über Aurubis-Fachbegriffe</p>
+        </div>
+      </div>
+
+      <div class="game-panel-body" id="setupScreen">
+        <p class="section-title">Quiz-Einstellungen</p>
+        <p style="color:var(--aurubis-grey); font-size:14px; margin-bottom:16px;">Wähle, was du abgefragt bekommen möchtest:</p>
+        <div class="mode-selector">
+          <button class="mode-btn active" data-mode="def">Begriff → Definition</button>
+          <button class="mode-btn" data-mode="term">Definition → Begriff</button>
+          <button class="mode-btn" data-mode="en">Englisch → Deutsch</button>
+        </div>
+        <p style="color:var(--aurubis-grey); font-size:14px; margin-bottom:16px;">Anzahl der Fragen:</p>
+        <div class="mode-selector">
+          <button class="mode-btn" data-count="10">10 Fragen</button>
+          <button class="mode-btn active" data-count="15">15 Fragen</button>
+          <button class="mode-btn" data-count="25">Alle 25</button>
+        </div>
+        <div style="margin-top:24px;">
+          <button class="btn btn-primary" id="startQuizBtn">Quiz starten →</button>
+        </div>
+      </div>
+
+      <div class="game-panel-body" id="quizScreen" style="display:none;">
+        <div class="score-bar">
+          <div class="score-item">
+            <span class="score-value" id="scoreCorrect">0</span>
+            <span class="score-label">Richtig</span>
+          </div>
+          <div class="score-item">
+            <span class="score-value" id="scoreWrong">0</span>
+            <span class="score-label">Falsch</span>
+          </div>
+          <div class="score-item">
+            <span class="score-value" id="scoreRemain">15</span>
+            <span class="score-label">Verbleibend</span>
+          </div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-fill" id="quizProgress" style="width:0%"></div>
+        </div>
+
+        <div class="quiz-question">
+          <div class="category-tag" id="questionCategory"></div>
+          <div class="question-label" id="questionLabel"></div>
+          <div class="question-text" id="questionText"></div>
+          <div class="question-hint" id="questionHint"></div>
+        </div>
+
+        <div class="options-grid" id="optionsGrid"></div>
+        <div class="feedback-box" id="feedbackBox"></div>
+        <div class="quiz-controls">
+          <button class="btn btn-primary" id="nextBtn" style="display:none;">Nächste Frage →</button>
+        </div>
+      </div>
+
+      <div class="game-panel-body result-screen" id="resultScreen" style="display:none;">
+        <div class="result-icon" id="resultIcon"></div>
+        <h3 id="resultTitle"></h3>
+        <div class="final-score" id="finalScore"></div>
+        <p id="resultMsg"></p>
+        <div class="result-actions">
+          <button class="btn btn-primary" id="replayBtn">Nochmal spielen</button>
+          <a href="index.html" class="btn btn-secondary">Andere Spiele</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>Aurubis Lernspiele – Erstellt zu Bildungszwecken &nbsp;|&nbsp; <a href="https://www.aurubis.com" target="_blank" rel="noopener">aurubis.com</a></p>
+</footer>
+
+<script src="vocabulary.js"></script>
+<script>
+  let mode = 'def';
+  let totalCount = 15;
+  let questions = [];
+  let current = 0;
+  let correct = 0;
+  let wrong = 0;
+
+  // Mode selector
+  document.querySelectorAll('[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      mode = btn.dataset.mode;
+    });
+  });
+
+  // Count selector
+  document.querySelectorAll('[data-count]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-count]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      totalCount = parseInt(btn.dataset.count);
+    });
+  });
+
+  document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
+  document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+  document.getElementById('replayBtn').addEventListener('click', () => {
+    document.getElementById('resultScreen').style.display = 'none';
+    document.getElementById('setupScreen').style.display = 'block';
+  });
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function startQuiz() {
+    questions = shuffle(VOCABULARY).slice(0, Math.min(totalCount, VOCABULARY.length));
+    current = 0; correct = 0; wrong = 0;
+    document.getElementById('setupScreen').style.display = 'none';
+    document.getElementById('quizScreen').style.display = 'block';
+    document.getElementById('resultScreen').style.display = 'none';
+    updateScoreBar();
+    showQuestion();
+  }
+
+  function updateScoreBar() {
+    document.getElementById('scoreCorrect').textContent = correct;
+    document.getElementById('scoreWrong').textContent = wrong;
+    document.getElementById('scoreRemain').textContent = questions.length - current;
+    const pct = (current / questions.length) * 100;
+    document.getElementById('quizProgress').style.width = pct + '%';
+  }
+
+  function showQuestion() {
+    const q = questions[current];
+    const cat = document.getElementById('questionCategory');
+    const label = document.getElementById('questionLabel');
+    const text = document.getElementById('questionText');
+    const hint = document.getElementById('questionHint');
+    const grid = document.getElementById('optionsGrid');
+    const fb = document.getElementById('feedbackBox');
+    const nextBtn = document.getElementById('nextBtn');
+
+    cat.textContent = q.category;
+    fb.className = 'feedback-box';
+    fb.innerHTML = '';
+    nextBtn.style.display = 'none';
+
+    // Build question based on mode
+    let questionStr = '';
+    let correctAnswer = '';
+    let distractors = [];
+
+    if (mode === 'def') {
+      label.textContent = 'Welche Definition passt zu diesem Begriff?';
+      questionStr = q.term;
+      hint.textContent = '(Deutsch → Definition)';
+      correctAnswer = q.definition;
+      distractors = shuffle(VOCABULARY.filter(v => v !== q)).slice(0, 3).map(v => v.definition);
+    } else if (mode === 'term') {
+      label.textContent = 'Welcher Begriff passt zu dieser Definition?';
+      questionStr = q.definition;
+      hint.textContent = '(Definition → Deutsch)';
+      correctAnswer = q.term;
+      distractors = shuffle(VOCABULARY.filter(v => v !== q)).slice(0, 3).map(v => v.term);
+    } else {
+      label.textContent = 'Was bedeutet dieses englische Wort auf Deutsch?';
+      questionStr = q.english;
+      hint.textContent = '(Englisch → Deutsch)';
+      correctAnswer = q.term;
+      distractors = shuffle(VOCABULARY.filter(v => v !== q)).slice(0, 3).map(v => v.term);
+    }
+
+    text.textContent = questionStr;
+
+    const opts = shuffle([correctAnswer, ...distractors]);
+    const letters = ['A', 'B', 'C', 'D'];
+    grid.innerHTML = '';
+    opts.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${opt}</span>`;
+      btn.addEventListener('click', () => handleAnswer(btn, opt, correctAnswer, q));
+      grid.appendChild(btn);
+    });
+  }
+
+  function handleAnswer(clickedBtn, chosen, correctAnswer, q) {
+    const grid = document.getElementById('optionsGrid');
+    const fb = document.getElementById('feedbackBox');
+    const nextBtn = document.getElementById('nextBtn');
+
+    // Disable all buttons
+    grid.querySelectorAll('.option-btn').forEach(b => {
+      b.disabled = true;
+      const txt = b.querySelector('span:last-child').textContent;
+      if (txt === correctAnswer) b.classList.add('correct');
+    });
+
+    const isCorrect = chosen === correctAnswer;
+    if (isCorrect) {
+      correct++;
+      clickedBtn.classList.add('correct');
+      fb.className = 'feedback-box correct';
+      fb.innerHTML = `<div class="fb-title">✓ Richtig!</div>
+        <div>Super gemacht! Der Begriff <strong>${q.term}</strong> gehört zur Kategorie <em>${q.category}</em>.</div>
+        <div class="fb-def">📖 ${q.definition}</div>`;
+    } else {
+      wrong++;
+      clickedBtn.classList.add('wrong');
+      fb.className = 'feedback-box wrong';
+      fb.innerHTML = `<div class="fb-title">✗ Leider falsch</div>
+        <div>Die richtige Antwort war: <strong>${correctAnswer}</strong></div>
+        <div class="fb-def">📖 ${q.definition}</div>`;
+    }
+
+    current++;
+    updateScoreBar();
+    nextBtn.style.display = current < questions.length ? 'inline-flex' : 'none';
+    if (current >= questions.length) {
+      setTimeout(showResult, 1400);
+    }
+  }
+
+  function nextQuestion() {
+    document.getElementById('feedbackBox').className = 'feedback-box';
+    showQuestion();
+  }
+
+  function showResult() {
+    document.getElementById('quizScreen').style.display = 'none';
+    const rs = document.getElementById('resultScreen');
+    rs.style.display = 'block';
+    const pct = Math.round((correct / questions.length) * 100);
+    let icon, title, msg;
+    if (pct >= 90) { icon = '🏆'; title = 'Ausgezeichnet!'; msg = 'Du bist ein echter Aurubis-Experte! Dein Fachwortschatz ist beeindruckend.'; }
+    else if (pct >= 70) { icon = '🥈'; title = 'Sehr gut!'; msg = 'Du kennst die meisten Fachbegriffe. Noch ein bisschen Übung und du schaffst die 100 %!'; }
+    else if (pct >= 50) { icon = '🥉'; title = 'Gut gemacht!'; msg = 'Du bist auf dem richtigen Weg. Wiederhole die Begriffe, die du noch nicht kennst.'; }
+    else { icon = '📚'; title = 'Weiter üben!'; msg = 'Lies dir die Vokabeln nochmal durch und probiere es dann erneut. Du schaffst das!'; }
+    document.getElementById('resultIcon').textContent = icon;
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('finalScore').textContent = `${correct} / ${questions.length}`;
+    document.getElementById('resultMsg').textContent = msg;
+  }
+</script>
+
+</body>
+</html>
