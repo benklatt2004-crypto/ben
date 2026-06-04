@@ -11,9 +11,27 @@ const defaultState = () => ({
   done: {}, // lessonId -> true
   reps: {}, // lessonId -> Anzahl absolvierter Wiederholungen der Inhaltsabfrage
   best: {}, // lessonId -> beste Quote (Anzahl richtig) der Inhaltsabfrage
+  lastPass: {}, // lessonId -> Zeitstempel (ms) des letzten Bestehens (für Spaced Repetition)
   sessions: [], // { id, date, hours, lessons: [lessonId] }
   reduceMotion: false,
 });
+
+// Spaced Repetition: Wiederholungsintervall (Tage) wächst mit der Anzahl Wiederholungen
+function reviewIntervalDays(reps) {
+  const steps = [3, 7, 16, 35, 90, 180];
+  return steps[Math.min(reps, steps.length - 1)];
+}
+// Fällig, wenn bestanden, aber das Intervall seit dem letzten Bestehen abgelaufen ist
+function isDue(id) {
+  if (!state.done[id]) return false;
+  const last = state.lastPass[id];
+  if (!last) return false;
+  const days = reviewIntervalDays(state.reps[id] || 0);
+  return Date.now() >= last + days * 86400000;
+}
+function dueLessons() {
+  return allLessons().filter((l) => isDue(l.id));
+}
 
 let state = loadState();
 
@@ -165,8 +183,30 @@ function switchView(name) {
 
   if (name === "dashboard") renderDashboard();
   if (name === "lehrplan") renderLehrplan();
+  if (name === "phasen") renderPhasen();
   if (name === "fragen") renderFragen();
   if (name === "planer") renderPlaner();
+}
+
+/* ====================================================================
+   PHASENPLAN
+   ==================================================================== */
+function renderPhasen() {
+  const wrap = $("#phasen-content");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+  PHASES.forEach((p) => {
+    const card = el("div", "phase-card");
+    card.style.borderTopColor = p.color;
+    card.innerHTML = `
+      <div class="phase-nr" style="background:${p.color}">${p.nr}</div>
+      <h3>${p.title}</h3>
+      <div class="phase-period">${p.period}</div>
+      <p class="phase-goal"><strong>Ziel:</strong> ${p.goal}</p>
+      <ul class="phase-tasks">${p.tasks.map((t) => `<li>${t}</li>`).join("")}</ul>`;
+    wrap.appendChild(card);
+  });
+  reveal($$(".phase-card", wrap));
 }
 
 $("#tabs").addEventListener("click", (e) => {
@@ -264,6 +304,38 @@ function renderDashboard() {
     });
   }
 
+  // Heute fällige Wiederholungen (Spaced Repetition)
+  const dueWrap = $("#due-section");
+  if (dueWrap) {
+    const due = dueLessons();
+    if (due.length === 0) {
+      dueWrap.hidden = true;
+      dueWrap.innerHTML = "";
+    } else {
+      dueWrap.hidden = false;
+      dueWrap.innerHTML = `<h3>🔁 Heute zur Wiederholung fällig (${due.length})</h3>`;
+      due.forEach((l) => {
+        const row = el("div", "next-lesson");
+        row.innerHTML = `
+          <span class="dot" style="background:${l.area.color}"></span>
+          <div class="meta"><strong>${l.title}</strong><span>${l.area.title} · ${(state.reps[l.id] || 0)}× wiederholt</span></div>
+          <span class="due-tag">fällig</span>`;
+        row.style.cursor = "pointer";
+        row.addEventListener("click", () => {
+          switchView("lehrplan");
+          setTimeout(() => {
+            const ln = $("#lesson-" + l.id);
+            if (ln) {
+              ln.classList.add("open");
+              ln.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }, 140);
+        });
+        dueWrap.appendChild(row);
+      });
+    }
+  }
+
   reveal($$(".stat, .area-card", $("#view-dashboard")));
   attachRipples($("#view-dashboard"));
 }
@@ -292,19 +364,22 @@ function renderLehrplan() {
     a.lessons.forEach((l) => {
       const done = !!state.done[l.id];
       const reps = state.reps[l.id] || 0;
-      const quiz = (typeof LESSON_QUIZ !== "undefined" && LESSON_QUIZ[l.id]) || [];
-      const lesson = el("div", "lesson" + (done ? " done" : ""));
+      const quiz = l.quiz || [];
+      const dueNow = isDue(l.id);
+      const lesson = el("div", "lesson" + (done ? " done" : "") + (dueNow ? " due" : ""));
       lesson.id = "lesson-" + l.id;
       lesson.innerHTML = `
         <div class="lesson-head">
           <div class="lesson-check" role="checkbox" aria-checked="${done}" tabindex="0">✓</div>
           <div class="lesson-title">${l.title}</div>
+          <span class="due-badge" ${dueNow ? "" : "hidden"}>🔁 Wiederholung fällig</span>
           <span class="rep-badge" ${reps ? "" : "hidden"}>${reps}× wiederholt</span>
           <div class="lesson-hours">${l.hours} h</div>
           <div class="chev">▶</div>
         </div>
         <div class="lesson-body">
-          <ul>${l.topics.map((t) => `<li>${t}</li>`).join("")}</ul>
+          <div class="learn">${l.learn || ""}</div>
+          <div class="kurz"><h5>Kurzüberblick</h5><ul>${l.topics.map((t) => `<li>${t}</li>`).join("")}</ul></div>
           <div class="exam-focus"><strong>So wird's geprüft:</strong> ${l.examFocus}</div>
           <div class="lesson-quiz">
             <div class="lq-head">📝 Inhaltsabfrage <span class="lq-score"></span></div>
@@ -445,11 +520,21 @@ function renderLessonQuiz(lesson, l, quiz, setDone) {
     });
     foot.appendChild(retry);
 
-    if (correct >= pass && !state.done[l.id]) {
-      setDone(true, true);
-      const r = scoreEl.getBoundingClientRect();
-      confettiBurst(r.left + r.width / 2, r.top + r.height / 2);
-      toast(`Inhaltsabfrage „${l.title}" bestanden! ✅`);
+    if (correct >= pass) {
+      // Bestanden: Zeitstempel für Spaced Repetition setzen, Fälligkeit aufheben
+      const wasDone = !!state.done[l.id];
+      state.lastPass[l.id] = Date.now();
+      lesson.classList.remove("due");
+      const dueB = $(".due-badge", lesson);
+      if (dueB) dueB.hidden = true;
+      if (!wasDone) {
+        setDone(true, true);
+        const r = scoreEl.getBoundingClientRect();
+        confettiBurst(r.left + r.width / 2, r.top + r.height / 2);
+        toast(`Inhaltsabfrage „${l.title}" bestanden! ✅`);
+      } else {
+        toast(`Wiederholung „${l.title}" geschafft – nächste Auffrischung in ${reviewIntervalDays(state.reps[l.id] || 0)} Tagen.`);
+      }
     }
     saveState();
   }
@@ -815,23 +900,31 @@ $("#add-session").addEventListener("click", () => {
 
 $("#autofill").addEventListener("click", () => {
   const lessons = allLessons();
-  const dates = suggestedDates(lessons.length); // genug Termine
-  // Slots so erzeugen/füllen, dass je 2h pro Slot (passt zu je 1 Einheit à 2h)
-  const sessions = [];
-  let di = 0;
+  // Einheiten in 2-Stunden-Slots bündeln (Slot voll = 2 h erreicht/überschritten)
+  const groups = [];
+  let cur = [];
+  let curH = 0;
   lessons.forEach((l) => {
-    sessions.push({
-      id: "s" + Date.now() + "_" + di,
-      date: dates[di] || "",
-      hours: 2,
-      lessons: [l.id],
-    });
-    di++;
+    cur.push(l.id);
+    curH += l.hours || 0;
+    if (curH >= 2) {
+      groups.push(cur);
+      cur = [];
+      curH = 0;
+    }
   });
-  state.sessions = sessions;
+  if (cur.length) groups.push(cur);
+
+  const dates = suggestedDates(groups.length);
+  state.sessions = groups.map((ids, i) => ({
+    id: "s" + Date.now() + "_" + i,
+    date: dates[i] || "",
+    hours: 2,
+    lessons: ids,
+  }));
   saveState();
   renderPlaner();
-  toast("Vorschlag erstellt – jede Einheit hat einen Termin.");
+  toast(`Vorschlag erstellt – ${groups.length} Termine à 2 h.`);
 });
 
 $("#reset-plan").addEventListener("click", () => {

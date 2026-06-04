@@ -566,3 +566,62 @@ h2 { font-size: 24px; margin: 0 0 6px; }
   .op-name { padding-bottom: 0; }
   .topbar { padding: 14px 16px 0; }
 }
+
+/* ===== Lerninhalt (learn) in Lerneinheiten ===== */
+.learn { font-size: 14px; color: var(--text); margin-bottom: 16px; }
+.learn p { margin: 0 0 10px; }
+.learn h5 {
+  margin: 16px 0 6px; font-size: 14px; color: var(--primary-dark);
+  text-transform: none; letter-spacing: 0; font-weight: 700;
+}
+.learn ul, .learn ol { margin: 6px 0 12px; padding-left: 20px; }
+.learn li { margin: 4px 0; }
+.learn em { font-style: normal; font-weight: 600; color: #334155; }
+.learn .formelbox {
+  background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px;
+  padding: 10px 14px; margin: 10px 0; font-size: 13.5px; line-height: 1.7;
+  font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+}
+.learn .bsp {
+  background: #ecfdf5; border-left: 4px solid #059669; border-radius: 8px;
+  padding: 10px 14px; margin: 10px 0; font-size: 13.5px;
+}
+.learn .merke {
+  background: #fef3c7; border-left: 4px solid #d97706; border-radius: 8px;
+  padding: 10px 14px; margin: 12px 0 4px; font-size: 13.5px;
+}
+.kurz { margin-bottom: 14px; }
+.kurz h5 { margin: 0 0 4px; font-size: 13px; color: var(--text-soft); text-transform: uppercase; letter-spacing: .4px; }
+.kurz ul { margin: 0 0 0; padding-left: 18px; }
+.kurz li { font-size: 13.5px; margin: 2px 0; color: var(--text-soft); }
+
+/* ===== Wiederholung fällig (Spaced Repetition) ===== */
+.due-badge {
+  font-size: 11px; font-weight: 700; color: #b45309;
+  background: #fef3c7; border: 1px solid #fcd34d;
+  padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+}
+.lesson.due { border-color: #fcd34d; box-shadow: 0 0 0 1px #fde68a, var(--shadow); }
+.due-section { margin-bottom: 22px; border-left: 4px solid #d97706; }
+.due-section h3 { margin: 0 0 8px; font-size: 16px; color: #92400e; }
+.due-tag {
+  font-size: 11px; font-weight: 700; color: #b45309;
+  background: #fef3c7; padding: 3px 10px; border-radius: 999px;
+}
+
+/* ===== Phasenplan ===== */
+.phase-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.phase-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-top: 5px solid var(--primary); border-radius: var(--radius);
+  padding: 20px; box-shadow: var(--shadow); position: relative;
+}
+.phase-card .phase-nr {
+  width: 38px; height: 38px; border-radius: 10px; color: #fff;
+  display: grid; place-items: center; font-weight: 800; font-size: 18px; margin-bottom: 10px;
+}
+.phase-card h3 { margin: 0 0 4px; font-size: 18px; }
+.phase-period { font-size: 12.5px; color: var(--text-soft); font-weight: 600; margin-bottom: 10px; }
+.phase-goal { font-size: 13.5px; margin: 0 0 10px; }
+.phase-tasks { margin: 0; padding-left: 18px; }
+.phase-tasks li { font-size: 13.5px; margin: 5px 0; color: var(--text-soft); }

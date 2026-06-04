@@ -22,6 +22,7 @@
       <nav class="tabs" id="tabs">
         <button class="tab active" data-view="dashboard">Übersicht</button>
         <button class="tab" data-view="lehrplan">Lehrplan</button>
+        <button class="tab" data-view="phasen">Phasenplan</button>
         <button class="tab" data-view="fragen">Prüfungsfragen verstehen</button>
         <button class="tab" data-view="planer">Terminplaner</button>
       </nav>
@@ -33,17 +34,19 @@
         <div class="hero">
           <h2>Willkommen zu deiner Prüfungsvorbereitung</h2>
           <p>
-            Dieser Plan führt dich durch alle vier Prüfungsbereiche der AP2 und
-            trainiert gezielt das Verständnis von Prüfungsfragen. Jede Einheit
-            schließt mit einer <strong>Inhaltsabfrage</strong> ab und ist auf
-            <strong>mehrfache Wiederholung</strong> ausgelegt – so festigst du
-            den Stoff über die Monate bis zur Prüfung. Teile dir die Einheiten
-            frei ein, wie es zu dir passt.
+            Dieser Plan führt dich durch alle drei Prüfungsbereiche der AP2
+            (Neuordnung) und trainiert gezielt das Verständnis von
+            Prüfungsfragen. Jede Einheit vermittelt echten Lernstoff und
+            schließt mit einer <strong>Inhaltsabfrage im Prüfungsstil</strong>
+            ab; sie ist auf <strong>mehrfache Wiederholung</strong> ausgelegt –
+            so festigst du den Stoff über die Monate bis zur Prüfung.
           </p>
           <div class="schedule-banner" id="schedule-banner"></div>
         </div>
 
         <div class="stat-grid" id="stat-grid"></div>
+
+        <div class="due-section card" id="due-section" hidden></div>
 
         <h3 class="section-title">Deine Prüfungsbereiche</h3>
         <div class="area-grid" id="area-grid"></div>
@@ -67,6 +70,17 @@
           <span id="lehrplan-progress-label"></span>
         </div>
         <div id="lehrplan-content"></div>
+      </section>
+
+      <!-- Phasenplan -->
+      <section class="view" id="view-phasen">
+        <h2>Phasenplan bis zur Prüfung</h2>
+        <p class="lead">
+          Zehn Monate sind genug Zeit – wenn du sie sinnvoll aufteilst. Der Plan
+          gliedert sich in drei Phasen: erst alles einmal lernen, dann gezielt
+          wiederholen, am Ende unter Prüfungsbedingungen üben.
+        </p>
+        <div class="phase-grid" id="phasen-content"></div>
       </section>
 
       <!-- Prüfungsfragen verstehen -->

@@ -1,43 +1,59 @@
-# AP2 Lernplan – Industriekaufmann/-frau
+# AP2 Lernplan – Industriekaufmann/-frau (Neuordnung)
 
-Eine interaktive, animationsreiche Lern-Website zur Vorbereitung auf die
-**Abschlussprüfung Teil 2 (AP2)** für Industriekaufleute (Neuordnung).
+Eine interaktive Lern-Website zur Vorbereitung auf die **Abschlussprüfung
+Teil 2 (AP2)** für Industriekaufleute nach der **neuen Ausbildungsordnung
+(IndKflAusbV, in Kraft seit 01.08.2024)**.
+
+## Inhaltliche Grundlage
+
+AP2 besteht aus drei Prüfungsbereichen (Lernfelder 8–13 des KMK-Rahmenlehrplans):
+
+1. **Marketing, Vertrieb, Personalwesen & kaufmännische Steuerung und Kontrolle**
+   (150 Min, 35 %) – LF 8, 9, 10, 12
+2. **Wirtschafts- und Sozialkunde** (60 Min, 10 %) – LF 11
+3. **Fachaufgabe im Einsatzgebiet** (Dokumentation, Präsentation & Fachgespräch,
+   30 %) – LF 13
+
+> Beschaffung/Produktion/Logistik gehören zu **Teil 1** und sind hier nicht
+> enthalten. Inhalte sind eine Orientierungshilfe – maßgeblich sind die aktuelle
+> Ausbildungsordnung, der Rahmenlehrplan und der IHK-Prüfungskatalog.
 
 ## Funktionen
 
-- **Übersicht** – animiertes Dashboard mit Fortschritts-Statistiken und allen
-  vier Prüfungsbereichen.
-- **Lehrplan** – alle Lerneinheiten zum Abhaken, jeweils mit Inhalten und einem
-  Hinweis *„So wird's geprüft"*. Fortschritt wird mit Konfetti gefeiert. ✨
+- **Übersicht** – Dashboard mit Fortschritt, Prüfungsbereichen und einer Liste
+  der **heute zur Wiederholung fälligen** Einheiten.
+- **Lehrplan** – 22 Lerneinheiten mit **echtem Lernstoff** (Erklärungen,
+  Formeln, Beispiele, Merksätze), Kurzüberblick und einem Prüfungshinweis. Jede
+  Einheit schließt mit einer **Inhaltsabfrage im Prüfungsstil** ab (insgesamt
+  132 Fragen, formuliert mit echten Operatoren wie *berechnen, erläutern,
+  beurteilen*). Bestehen ab 60 % markiert die Einheit als gelernt.
+- **Phasenplan** – drei Phasen über ~10 Monate: Grundlagen → Vertiefen &
+  Wiederholen → Prüfungssimulation.
 - **Prüfungsfragen verstehen** – Operatoren nach Anforderungsbereich (I/II/III),
-  Strategie-Spickzettel und ein Mini-Quiz zum Erkennen der geforderten
-  Antworttiefe.
+  Strategie-Tipps und ein Mini-Quiz.
 - **Terminplaner** – erste Einheit Fr 05.06.2026 (2 h), danach 2×/Woche à 2 h.
-  Lern-Slots frei anlegen, Datum/Dauer ändern und Einheiten per **Drag & Drop**
-  (oder Button) individuell zuordnen. Automatischer Vorschlag verfügbar.
+  Einheiten per Drag & Drop oder Button zuordnen; Auto-Vorschlag bündelt zu
+  2-Stunden-Slots.
 
-Fortschritt und Plan werden **lokal im Browser** (localStorage) gespeichert –
-kein Server, keine Anmeldung.
+### Wiederholung (Spaced Repetition)
+
+Bestandene Einheiten werden nach wachsenden Intervallen (3 → 7 → 16 → 35 → 90 →
+180 Tage) wieder als „fällig" markiert, damit der Stoff bis zur Prüfung sitzt.
+Fortschritt und Plan werden lokal im Browser (localStorage) gespeichert.
 
 ## Starten
 
-Einfach `index.html` im Browser öffnen. Kein Build, keine Abhängigkeiten.
-
-Alternativ lokal mit einem kleinen Webserver:
+`index.html` im Browser öffnen – kein Build, keine Abhängigkeiten. Alternativ:
 
 ```bash
-python3 -m http.server 8000
-# dann http://localhost:8000 öffnen
+python3 -m http.server 8000   # dann http://localhost:8000
 ```
 
 ## Dateien
 
-| Datei        | Inhalt                                            |
-| ------------ | ------------------------------------------------- |
-| `index.html` | Seitenstruktur & Ansichten                        |
-| `styles.css` | Design + Animationen (Reveal, Konfetti, Ripple …) |
-| `app.js`     | Logik: Navigation, Fortschritt, Quiz, Planer      |
-| `data.js`    | Lehrplan-Inhalte & Operatoren                     |
-
-> Hinweis: Die Inhalte sind eine Orientierungshilfe. Maßgeblich sind die
-> aktuelle Ausbildungsordnung und der Rahmenlehrplan.
+| Datei        | Inhalt                                              |
+| ------------ | --------------------------------------------------- |
+| `index.html` | Seitenstruktur & Ansichten                          |
+| `styles.css` | Design + Animationen + Lerntext-/Phasen-Styles      |
+| `app.js`     | Logik: Navigation, Quiz, Spaced Repetition, Planer  |
+| `data.js`    | Lehrplan-Inhalte, Quizfragen, Phasen, Operatoren    |
