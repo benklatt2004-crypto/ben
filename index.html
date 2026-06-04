@@ -23,6 +23,7 @@
         <button class="tab active" data-view="dashboard">Übersicht</button>
         <button class="tab" data-view="lehrplan">Lehrplan</button>
         <button class="tab" data-view="phasen">Phasenplan</button>
+        <button class="tab" data-view="auswertung">Auswertung</button>
         <button class="tab" data-view="fragen">Prüfungsfragen verstehen</button>
         <button class="tab" data-view="planer">Terminplaner</button>
       </nav>
@@ -55,8 +56,6 @@
           <h3>Als Nächstes dran</h3>
           <div id="next-up-content"></div>
         </div>
-
-        <div class="eval-section card" id="eval-section"></div>
       </section>
 
       <!-- Lehrplan -->
@@ -83,6 +82,17 @@
           wiederholen, am Ende unter Prüfungsbedingungen üben.
         </p>
         <div class="phase-grid" id="phasen-content"></div>
+      </section>
+
+      <!-- Auswertung -->
+      <section class="view" id="view-auswertung">
+        <h2>Auswertung</h2>
+        <p class="lead">
+          Hier siehst du, wie oft du was falsch gemacht hast – insgesamt, pro
+          Prüfungsbereich und pro Lerneinheit. So erkennst du gezielt deine
+          Schwachstellen.
+        </p>
+        <div id="auswertung-content"></div>
       </section>
 
       <!-- Prüfungsfragen verstehen -->

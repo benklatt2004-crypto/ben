@@ -185,6 +185,7 @@ function switchView(name) {
   if (name === "dashboard") renderDashboard();
   if (name === "lehrplan") renderLehrplan();
   if (name === "phasen") renderPhasen();
+  if (name === "auswertung") renderAuswertung();
   if (name === "fragen") renderFragen();
   if (name === "planer") renderPlaner();
 }
@@ -337,69 +338,92 @@ function renderDashboard() {
     }
   }
 
-  renderEval();
-
   reveal($$(".stat, .area-card", $("#view-dashboard")));
   attachRipples($("#view-dashboard"));
 }
 
-// Fehler-Auswertung: wie oft wurde je Einheit falsch geantwortet
-function renderEval() {
-  const wrap = $("#eval-section");
+/* ====================================================================
+   AUSWERTUNG (eigener Tab)
+   ==================================================================== */
+function renderAuswertung() {
+  const wrap = $("#auswertung-content");
   if (!wrap) return;
+
   const entries = allLessons()
     .map((l) => ({ l, s: state.stats[l.id] }))
     .filter((e) => e.s && e.s.answered > 0);
 
   if (entries.length === 0) {
     wrap.innerHTML =
-      `<h3>📊 Fehler-Auswertung</h3>` +
-      `<p class="muted">Noch keine Inhaltsabfragen beantwortet. Sobald du Fragen löst, siehst du hier, wo du am häufigsten danebenliegst.</p>`;
-    attachRipples(wrap);
+      `<div class="card"><p class="muted">Noch keine Inhaltsabfragen beantwortet. Sobald du im Lehrplan Fragen löst, siehst du hier, wo du am häufigsten danebenliegst – insgesamt, pro Prüfungsbereich und pro Einheit.</p></div>`;
     return;
   }
 
   const totalAns = entries.reduce((s, e) => s + e.s.answered, 0);
   const totalWrong = entries.reduce((s, e) => s + e.s.wrong, 0);
   const totalRate = totalAns ? Math.round((totalWrong / totalAns) * 100) : 0;
+  const lessonsTried = entries.length;
 
-  // nach absoluter Fehlerzahl sortieren, dann Fehlerquote
-  const ranked = entries
-    .slice()
-    .sort((a, b) => b.s.wrong - a.s.wrong || (b.s.wrong / b.s.answered) - (a.s.wrong / a.s.answered));
-
-  const withErrors = ranked.filter((e) => e.s.wrong > 0);
-
+  // KPI-Karten
   let html =
-    `<div class="eval-head"><h3>📊 Fehler-Auswertung</h3>` +
+    `<div class="eval-head"><h3 style="margin:0">📊 Überblick</h3>` +
     `<button class="btn ghost small" id="eval-reset">Statistik zurücksetzen</button></div>` +
     `<div class="eval-summary">` +
     `<div class="eval-kpi"><span class="num">${totalWrong}</span><span class="lbl">Fehler gesamt</span></div>` +
     `<div class="eval-kpi"><span class="num">${totalAns}</span><span class="lbl">beantwortete Fragen</span></div>` +
     `<div class="eval-kpi"><span class="num">${totalRate}%</span><span class="lbl">Fehlerquote</span></div>` +
+    `<div class="eval-kpi"><span class="num">${lessonsTried}</span><span class="lbl">bearbeitete Einheiten</span></div>` +
     `</div>`;
 
-  if (withErrors.length === 0) {
-    html += `<p class="muted">Stark – bisher keine Fehler! 🎯</p>`;
-  } else {
-    html += `<div class="eval-subtitle">Häufigste Fehler nach Einheit</div><div class="eval-list">`;
-    withErrors.slice(0, 8).forEach(({ l, s }) => {
-      const rate = Math.round((s.wrong / s.answered) * 100);
-      html +=
-        `<div class="eval-row" data-id="${l.id}">` +
-        `<span class="dot" style="background:${l.area.color}"></span>` +
-        `<span class="eval-name">${l.title}</span>` +
-        `<span class="eval-bartrack"><span class="eval-bar" style="width:${rate}%;background:${l.area.color}"></span></span>` +
-        `<span class="eval-count">${s.wrong}× falsch · ${rate}%</span>` +
-        `</div>`;
+  // Aufschlüsselung pro Prüfungsbereich
+  html += `<h3 class="section-title">Pro Prüfungsbereich</h3><div class="eval-list">`;
+  CURRICULUM.forEach((a) => {
+    let aAns = 0;
+    let aWrong = 0;
+    a.lessons.forEach((l) => {
+      const s = state.stats[l.id];
+      if (s) {
+        aAns += s.answered;
+        aWrong += s.wrong;
+      }
     });
-    html += `</div>`;
-  }
+    if (aAns === 0) return;
+    const rate = Math.round((aWrong / aAns) * 100);
+    html +=
+      `<div class="eval-row">` +
+      `<span class="dot" style="background:${a.color}"></span>` +
+      `<span class="eval-name">${a.title}</span>` +
+      `<span class="eval-bartrack"><span class="eval-bar" style="width:${rate}%;background:${a.color}"></span></span>` +
+      `<span class="eval-count">${aWrong} / ${aAns} falsch · ${rate}%</span>` +
+      `</div>`;
+  });
+  html += `</div>`;
+
+  // Alle bearbeiteten Einheiten, nach Fehlerquote sortiert
+  const ranked = entries
+    .slice()
+    .sort(
+      (a, b) =>
+        b.s.wrong / b.s.answered - a.s.wrong / a.s.answered || b.s.wrong - a.s.wrong
+    );
+  html += `<h3 class="section-title">Pro Einheit (nach Fehlerquote)</h3><div class="eval-list">`;
+  ranked.forEach(({ l, s }) => {
+    const rate = Math.round((s.wrong / s.answered) * 100);
+    const clean = s.wrong === 0;
+    html +=
+      `<div class="eval-row" data-id="${l.id}">` +
+      `<span class="dot" style="background:${l.area.color}"></span>` +
+      `<span class="eval-name">${l.title}${clean ? ' <span class="eval-clean">✓ fehlerfrei</span>' : ""}</span>` +
+      `<span class="eval-bartrack"><span class="eval-bar" style="width:${rate}%;background:${rate === 0 ? "#16a34a" : l.area.color}"></span></span>` +
+      `<span class="eval-count">${s.wrong}× falsch · ${rate}%</span>` +
+      `</div>`;
+  });
+  html += `</div>`;
 
   wrap.innerHTML = html;
 
-  // Klick auf eine Zeile springt zur Einheit
-  $$(".eval-row", wrap).forEach((row) => {
+  // Klick auf eine Einheit-Zeile springt zur Einheit im Lehrplan
+  $$(".eval-row[data-id]", wrap).forEach((row) => {
     row.style.cursor = "pointer";
     row.addEventListener("click", () => {
       const id = row.dataset.id;
@@ -420,11 +444,12 @@ function renderEval() {
       if (confirm("Fehler-Statistik wirklich zurücksetzen?")) {
         state.stats = {};
         saveState();
-        renderEval();
+        renderAuswertung();
         toast("Fehler-Statistik zurückgesetzt.");
       }
     });
 
+  reveal($$(".eval-kpi, .eval-row", wrap));
   attachRipples(wrap);
 }
 
