@@ -367,6 +367,8 @@ h2 { font-size: 24px; margin: 0 0 6px; }
   z-index: 50;
   padding: 20px;
 }
+/* hidden-Attribut muss display:grid sicher uebersteuern */
+.modal-backdrop[hidden] { display: none; }
 .modal {
   background: var(--surface);
   border-radius: var(--radius);
