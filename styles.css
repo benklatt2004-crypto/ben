@@ -625,3 +625,49 @@ h2 { font-size: 24px; margin: 0 0 6px; }
 .phase-goal { font-size: 13.5px; margin: 0 0 10px; }
 .phase-tasks { margin: 0; padding-left: 18px; }
 .phase-tasks li { font-size: 13.5px; margin: 5px 0; color: var(--text-soft); }
+
+/* ===== Pool: Mehrfachzuordnung ===== */
+.pi-count {
+  font-size: 11px; font-weight: 700; color: #1d4ed8;
+  background: #dbeafe; border-radius: 999px; padding: 2px 8px; white-space: nowrap;
+}
+.pool-item.is-planned { opacity: 0.92; }
+.pool-item.is-planned .pi-title { color: var(--text-soft); }
+
+/* ===== Fehler-Badge in Lerneinheit ===== */
+.wrong-badge {
+  font-size: 11px; font-weight: 700; color: #b91c1c;
+  background: #fee2e2; border: 1px solid #fecaca;
+  padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+}
+
+/* ===== Fehler-Auswertung (Dashboard) ===== */
+.eval-section { margin-top: 24px; }
+.eval-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.eval-head h3 { margin: 0; }
+.btn.small { padding: 6px 12px; font-size: 12.5px; }
+.eval-summary { display: flex; gap: 14px; flex-wrap: wrap; margin: 14px 0 6px; }
+.eval-kpi {
+  flex: 1; min-width: 120px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px;
+}
+.eval-kpi .num { display: block; font-size: 24px; font-weight: 800; }
+.eval-kpi .lbl { font-size: 12px; color: var(--text-soft); }
+.eval-subtitle { font-size: 13px; font-weight: 700; color: var(--text-soft); margin: 16px 0 8px; text-transform: uppercase; letter-spacing: .4px; }
+.eval-list { display: flex; flex-direction: column; gap: 8px; }
+.eval-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface); transition: transform .15s, box-shadow .15s;
+}
+.eval-row:hover { transform: translateX(2px); box-shadow: var(--shadow); }
+.eval-row .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.eval-name { flex: 1; font-size: 13.5px; font-weight: 600; }
+.eval-bartrack { width: 90px; height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; flex-shrink: 0; }
+.eval-bar { display: block; height: 100%; border-radius: 999px; transition: width .4s; }
+.eval-count { font-size: 12px; color: var(--text-soft); white-space: nowrap; min-width: 96px; text-align: right; }
+
+@media (max-width: 560px) {
+  .eval-bartrack { display: none; }
+}

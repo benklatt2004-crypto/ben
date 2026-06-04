@@ -12,6 +12,7 @@ const defaultState = () => ({
   reps: {}, // lessonId -> Anzahl absolvierter Wiederholungen der Inhaltsabfrage
   best: {}, // lessonId -> beste Quote (Anzahl richtig) der Inhaltsabfrage
   lastPass: {}, // lessonId -> Zeitstempel (ms) des letzten Bestehens (für Spaced Repetition)
+  stats: {}, // lessonId -> { answered, wrong } für die Fehler-Auswertung
   sessions: [], // { id, date, hours, lessons: [lessonId] }
   reduceMotion: false,
 });
@@ -336,8 +337,95 @@ function renderDashboard() {
     }
   }
 
+  renderEval();
+
   reveal($$(".stat, .area-card", $("#view-dashboard")));
   attachRipples($("#view-dashboard"));
+}
+
+// Fehler-Auswertung: wie oft wurde je Einheit falsch geantwortet
+function renderEval() {
+  const wrap = $("#eval-section");
+  if (!wrap) return;
+  const entries = allLessons()
+    .map((l) => ({ l, s: state.stats[l.id] }))
+    .filter((e) => e.s && e.s.answered > 0);
+
+  if (entries.length === 0) {
+    wrap.innerHTML =
+      `<h3>📊 Fehler-Auswertung</h3>` +
+      `<p class="muted">Noch keine Inhaltsabfragen beantwortet. Sobald du Fragen löst, siehst du hier, wo du am häufigsten danebenliegst.</p>`;
+    attachRipples(wrap);
+    return;
+  }
+
+  const totalAns = entries.reduce((s, e) => s + e.s.answered, 0);
+  const totalWrong = entries.reduce((s, e) => s + e.s.wrong, 0);
+  const totalRate = totalAns ? Math.round((totalWrong / totalAns) * 100) : 0;
+
+  // nach absoluter Fehlerzahl sortieren, dann Fehlerquote
+  const ranked = entries
+    .slice()
+    .sort((a, b) => b.s.wrong - a.s.wrong || (b.s.wrong / b.s.answered) - (a.s.wrong / a.s.answered));
+
+  const withErrors = ranked.filter((e) => e.s.wrong > 0);
+
+  let html =
+    `<div class="eval-head"><h3>📊 Fehler-Auswertung</h3>` +
+    `<button class="btn ghost small" id="eval-reset">Statistik zurücksetzen</button></div>` +
+    `<div class="eval-summary">` +
+    `<div class="eval-kpi"><span class="num">${totalWrong}</span><span class="lbl">Fehler gesamt</span></div>` +
+    `<div class="eval-kpi"><span class="num">${totalAns}</span><span class="lbl">beantwortete Fragen</span></div>` +
+    `<div class="eval-kpi"><span class="num">${totalRate}%</span><span class="lbl">Fehlerquote</span></div>` +
+    `</div>`;
+
+  if (withErrors.length === 0) {
+    html += `<p class="muted">Stark – bisher keine Fehler! 🎯</p>`;
+  } else {
+    html += `<div class="eval-subtitle">Häufigste Fehler nach Einheit</div><div class="eval-list">`;
+    withErrors.slice(0, 8).forEach(({ l, s }) => {
+      const rate = Math.round((s.wrong / s.answered) * 100);
+      html +=
+        `<div class="eval-row" data-id="${l.id}">` +
+        `<span class="dot" style="background:${l.area.color}"></span>` +
+        `<span class="eval-name">${l.title}</span>` +
+        `<span class="eval-bartrack"><span class="eval-bar" style="width:${rate}%;background:${l.area.color}"></span></span>` +
+        `<span class="eval-count">${s.wrong}× falsch · ${rate}%</span>` +
+        `</div>`;
+    });
+    html += `</div>`;
+  }
+
+  wrap.innerHTML = html;
+
+  // Klick auf eine Zeile springt zur Einheit
+  $$(".eval-row", wrap).forEach((row) => {
+    row.style.cursor = "pointer";
+    row.addEventListener("click", () => {
+      const id = row.dataset.id;
+      switchView("lehrplan");
+      setTimeout(() => {
+        const ln = $("#lesson-" + id);
+        if (ln) {
+          ln.classList.add("open");
+          ln.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 140);
+    });
+  });
+
+  const resetBtn = $("#eval-reset", wrap);
+  if (resetBtn)
+    resetBtn.addEventListener("click", () => {
+      if (confirm("Fehler-Statistik wirklich zurücksetzen?")) {
+        state.stats = {};
+        saveState();
+        renderEval();
+        toast("Fehler-Statistik zurückgesetzt.");
+      }
+    });
+
+  attachRipples(wrap);
 }
 
 /* ====================================================================
@@ -364,6 +452,7 @@ function renderLehrplan() {
     a.lessons.forEach((l) => {
       const done = !!state.done[l.id];
       const reps = state.reps[l.id] || 0;
+      const wrong = (state.stats[l.id] && state.stats[l.id].wrong) || 0;
       const quiz = l.quiz || [];
       const dueNow = isDue(l.id);
       const lesson = el("div", "lesson" + (done ? " done" : "") + (dueNow ? " due" : ""));
@@ -373,6 +462,7 @@ function renderLehrplan() {
           <div class="lesson-check" role="checkbox" aria-checked="${done}" tabindex="0">✓</div>
           <div class="lesson-title">${l.title}</div>
           <span class="due-badge" ${dueNow ? "" : "hidden"}>🔁 Wiederholung fällig</span>
+          <span class="wrong-badge" ${wrong ? "" : "hidden"} title="bisher falsch beantwortet">✗ ${wrong}</span>
           <span class="rep-badge" ${reps ? "" : "hidden"}>${reps}× wiederholt</span>
           <div class="lesson-hours">${l.hours} h</div>
           <div class="chev">▶</div>
@@ -484,7 +574,11 @@ function renderLessonQuiz(lesson, l, quiz, setDone) {
           else if (b === btn) b.classList.add("wrong");
         });
         answered++;
+        const st = (state.stats[l.id] = state.stats[l.id] || { answered: 0, wrong: 0 });
+        st.answered++;
         if (chosen === q.correct) correct++;
+        else st.wrong++;
+        saveState();
 
         if (answered === quiz.length) finishQuiz();
       });
@@ -682,10 +776,6 @@ function ensureInitialSessions() {
   }
 }
 
-function plannedLessonIds() {
-  return new Set(state.sessions.flatMap((s) => s.lessons));
-}
-
 function formatDate(iso) {
   if (!iso) return "Datum wählen";
   const d = new Date(iso + "T00:00:00");
@@ -745,7 +835,7 @@ function buildSession(s, idx) {
   if (s.lessons.length === 0) {
     body.appendChild(el("div", "session-empty", "Noch leer – Einheit hierher ziehen oder unten mit + hinzufügen."));
   } else {
-    s.lessons.forEach((id) => {
+    s.lessons.forEach((id, idx) => {
       const l = lessonById(id);
       if (!l) return;
       const chip = el("div", "chip");
@@ -755,7 +845,7 @@ function buildSession(s, idx) {
         <span class="chip-h">${l.hours} h</span>
         <button class="chip-x" title="Entfernen">✕</button>`;
       $(".chip-x", chip).addEventListener("click", () => {
-        s.lessons = s.lessons.filter((x) => x !== id);
+        s.lessons.splice(idx, 1); // nur diese eine Zuordnung entfernen
         saveState();
         renderPlaner();
       });
@@ -796,29 +886,36 @@ function buildSession(s, idx) {
   return node;
 }
 
+function plannedCounts() {
+  const map = {};
+  state.sessions.forEach((s) => s.lessons.forEach((id) => (map[id] = (map[id] || 0) + 1)));
+  return map;
+}
+
 function renderPool() {
   const pool = $("#lesson-pool");
   pool.innerHTML = "";
-  const planned = plannedLessonIds();
-  const open = allLessons().filter((l) => !planned.has(l.id));
+  const counts = plannedCounts();
+  // Alle Einheiten bleiben verfügbar – jede kann mehrfach eingeplant werden.
+  // Noch nicht eingeplante zuerst.
+  const lessons = allLessons()
+    .slice()
+    .sort((a, b) => (counts[a.id] || 0) - (counts[b.id] || 0));
 
-  if (open.length === 0) {
-    pool.appendChild(el("div", "pool-empty", "Alles eingeplant. 👏"));
-    return;
-  }
-
-  open.forEach((l) => {
-    const item = el("div", "pool-item");
+  lessons.forEach((l) => {
+    const cnt = counts[l.id] || 0;
+    const item = el("div", "pool-item" + (cnt ? " is-planned" : ""));
     item.draggable = true;
     item.dataset.id = l.id;
     item.innerHTML = `
       <span class="pi-area" style="background:${l.area.color}"></span>
       <span class="pi-title">${l.title} <span class="muted small">· ${l.hours} h</span></span>
+      ${cnt ? `<span class="pi-count" title="bereits eingeplant">${cnt}×</span>` : ""}
       <button class="pi-add" title="Zu einem Slot hinzufügen">+</button>`;
 
     item.addEventListener("dragstart", (e) => {
       e.dataTransfer.setData("text/plain", l.id);
-      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.effectAllowed = "copy";
       item.style.opacity = "0.5";
     });
     item.addEventListener("dragend", () => (item.style.opacity = "1"));
@@ -830,10 +927,8 @@ function renderPool() {
 }
 
 function assignLesson(lessonId, sessionId) {
-  // aus allen sessions entfernen, dann zur Ziel-Session
-  state.sessions.forEach((s) => {
-    s.lessons = s.lessons.filter((x) => x !== lessonId);
-  });
+  // Einheit dem Ziel-Slot hinzufügen – Mehrfachzuordnung ist erlaubt
+  // (gleiche Einheit in mehreren Slots oder mehrmals in einem Slot, z. B. für 2 h)
   const target = state.sessions.find((s) => s.id === sessionId);
   if (target) {
     target.lessons.push(lessonId);
