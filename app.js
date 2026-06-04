@@ -562,13 +562,38 @@ function updateLehrplanProgress() {
   if (label) label.textContent = `${done}/${lessons.length} · ${pct}%`;
 }
 
-// Inhaltsabfrage einer Lerneinheit aufbauen (frischer Durchgang)
+// Array mischen (Fisher–Yates) – ohne Original zu verändern
+function shuffled(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Einen Durchgang aufbauen: Fragenreihenfolge und Antwortoptionen mischen,
+// damit Wiederholungen nicht zum Auswendiglernen von Positionen werden.
+function makeQuizRound(quiz) {
+  return shuffled(quiz).map((q) => {
+    const order = shuffled(q.opts.map((text, idx) => ({ text, idx })));
+    return {
+      q: q.q,
+      fb: q.fb,
+      opts: order.map((o) => o.text),
+      correct: order.findIndex((o) => o.idx === q.correct),
+    };
+  });
+}
+
+// Inhaltsabfrage einer Lerneinheit aufbauen (frischer, gemischter Durchgang)
 function renderLessonQuiz(lesson, l, quiz, setDone) {
   const body = $(".lq-body", lesson);
   const foot = $(".lq-foot", lesson);
   const scoreEl = $(".lq-score", lesson);
   const repBadge = $(".rep-badge", lesson);
-  const pass = Math.ceil(quiz.length * 0.6); // ab 60 % gilt als bestanden
+  const round = makeQuizRound(quiz);
+  const pass = Math.ceil(round.length * 0.6); // ab 60 % gilt als bestanden
 
   body.innerHTML = "";
   foot.innerHTML = "";
@@ -577,7 +602,7 @@ function renderLessonQuiz(lesson, l, quiz, setDone) {
   let answered = 0;
   let correct = 0;
 
-  quiz.forEach((q, qi) => {
+  round.forEach((q, qi) => {
     const item = el("div", "lq-q");
     const opts = q.opts
       .map((o, oi) => `<button class="lq-opt" data-o="${oi}">${o}</button>`)
@@ -605,7 +630,7 @@ function renderLessonQuiz(lesson, l, quiz, setDone) {
         else st.wrong++;
         saveState();
 
-        if (answered === quiz.length) finishQuiz();
+        if (answered === round.length) finishQuiz();
       });
     });
   });
