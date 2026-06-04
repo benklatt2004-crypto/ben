@@ -478,7 +478,7 @@ function renderLehrplan() {
       const done = !!state.done[l.id];
       const reps = state.reps[l.id] || 0;
       const wrong = (state.stats[l.id] && state.stats[l.id].wrong) || 0;
-      const quiz = l.quiz || [];
+      const quiz = lessonQuiz(l);
       const dueNow = isDue(l.id);
       const lesson = el("div", "lesson" + (done ? " done" : "") + (dueNow ? " due" : ""));
       lesson.id = "lesson-" + l.id;
@@ -562,6 +562,27 @@ function updateLehrplanProgress() {
   if (label) label.textContent = `${done}/${lessons.length} · ${pct}%`;
 }
 
+// Vollständiger Fragenpool einer Einheit: Basisfragen + optionale Zusatzfragen
+function lessonQuiz(l) {
+  const extra = (typeof EXTRA_QUIZ !== "undefined" && EXTRA_QUIZ[l.id]) || [];
+  return (l.quiz || []).concat(extra);
+}
+
+// Wie viele Fragen je Durchgang gezeigt werden
+const QUIZ_PER_ROUND = 6;
+
+// Aus dem Pool die Fragen für den aktuellen Durchgang wählen (rotierend nach reps).
+// So sieht man bei Wiederholungen andere Fragen, bis der Pool durch ist.
+function pickRoundQuestions(pool, reps) {
+  const show = QUIZ_PER_ROUND;
+  if (pool.length <= show) return pool.slice();
+  const rounds = Math.ceil(pool.length / show);
+  const start = ((reps % rounds) + rounds) % rounds * show;
+  let sel = pool.slice(start, start + show);
+  if (sel.length < show) sel = sel.concat(pool.slice(0, show - sel.length));
+  return sel;
+}
+
 // Array mischen (Fisher–Yates) – ohne Original zu verändern
 function shuffled(arr) {
   const a = arr.slice();
@@ -592,8 +613,25 @@ function renderLessonQuiz(lesson, l, quiz, setDone) {
   const foot = $(".lq-foot", lesson);
   const scoreEl = $(".lq-score", lesson);
   const repBadge = $(".rep-badge", lesson);
-  const round = makeQuizRound(quiz);
+  const reps = state.reps[l.id] || 0;
+  const round = makeQuizRound(pickRoundQuestions(quiz, reps));
   const pass = Math.ceil(round.length * 0.6); // ab 60 % gilt als bestanden
+
+  // Hinweis, welcher Fragensatz aus dem Pool gerade läuft
+  const head = $(".lq-head", lesson);
+  if (head) {
+    let info = $(".lq-round", head);
+    if (!info) {
+      info = el("span", "lq-round");
+      head.appendChild(info);
+    }
+    if (quiz.length > QUIZ_PER_ROUND) {
+      const rounds = Math.ceil(quiz.length / QUIZ_PER_ROUND);
+      info.textContent = `Satz ${(reps % rounds) + 1}/${rounds} · ${quiz.length} Fragen im Pool`;
+    } else {
+      info.textContent = "";
+    }
+  }
 
   body.innerHTML = "";
   foot.innerHTML = "";

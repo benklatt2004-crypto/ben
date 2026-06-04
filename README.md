@@ -24,9 +24,10 @@ AP2 besteht aus drei Prüfungsbereichen (Lernfelder 8–13 des KMK-Rahmenlehrpla
   der **heute zur Wiederholung fälligen** Einheiten.
 - **Lehrplan** – 22 Lerneinheiten mit **echtem Lernstoff** (Erklärungen,
   Formeln, Beispiele, Merksätze), Kurzüberblick und einem Prüfungshinweis. Jede
-  Einheit schließt mit einer **Inhaltsabfrage im Prüfungsstil** ab (insgesamt
-  132 Fragen, formuliert mit echten Operatoren wie *berechnen, erläutern,
-  beurteilen*). Bestehen ab 60 % markiert die Einheit als gelernt.
+  Einheit schließt mit einer **Inhaltsabfrage im Prüfungsstil** ab. Pro Einheit
+  gibt es einen Pool von **12 Fragen** (264 insgesamt); je Durchgang werden 6
+  davon **rotierend** gezeigt, Fragen- und Antwortreihenfolge werden gemischt.
+  Bestehen ab 60 % markiert die Einheit als gelernt.
 - **Phasenplan** – drei Phasen über ~10 Monate: Grundlagen → Vertiefen &
   Wiederholen → Prüfungssimulation.
 - **Prüfungsfragen verstehen** – Operatoren nach Anforderungsbereich (I/II/III),
