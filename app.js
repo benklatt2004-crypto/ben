@@ -9,6 +9,8 @@ const STORE_KEY = "ap2-lernplan-v1";
 // ---- State ----------------------------------------------------------
 const defaultState = () => ({
   done: {}, // lessonId -> true
+  reps: {}, // lessonId -> Anzahl absolvierter Wiederholungen der Inhaltsabfrage
+  best: {}, // lessonId -> beste Quote (Anzahl richtig) der Inhaltsabfrage
   sessions: [], // { id, date, hours, lessons: [lessonId] }
   reduceMotion: false,
 });
@@ -190,11 +192,12 @@ function renderDashboard() {
   const plannedHours = state.sessions.reduce((s, x) => s + Number(x.hours || 0), 0);
   const pct = total ? Math.round((doneCount / total) * 100) : 0;
 
+  const totalReps = Object.values(state.reps || {}).reduce((s, n) => s + Number(n || 0), 0);
   const stats = [
-    { num: doneCount, of: total, label: "Einheiten erledigt", suffix: "" },
+    { num: doneCount, of: total, label: "Einheiten bestanden", suffix: "" },
     { num: pct, label: "Fortschritt", suffix: "%" },
-    { num: totalHours, label: "Lernstunden gesamt", suffix: " h" },
-    { num: state.sessions.length, label: "geplante Slots", suffix: "" },
+    { num: totalReps, label: "Abfrage-Wiederholungen", suffix: "" },
+    { num: totalHours, label: "Lernstunden / Durchgang", suffix: " h" },
   ];
   const grid = $("#stat-grid");
   grid.innerHTML = "";
@@ -288,18 +291,26 @@ function renderLehrplan() {
 
     a.lessons.forEach((l) => {
       const done = !!state.done[l.id];
+      const reps = state.reps[l.id] || 0;
+      const quiz = (typeof LESSON_QUIZ !== "undefined" && LESSON_QUIZ[l.id]) || [];
       const lesson = el("div", "lesson" + (done ? " done" : ""));
       lesson.id = "lesson-" + l.id;
       lesson.innerHTML = `
         <div class="lesson-head">
           <div class="lesson-check" role="checkbox" aria-checked="${done}" tabindex="0">✓</div>
           <div class="lesson-title">${l.title}</div>
+          <span class="rep-badge" ${reps ? "" : "hidden"}>${reps}× wiederholt</span>
           <div class="lesson-hours">${l.hours} h</div>
           <div class="chev">▶</div>
         </div>
         <div class="lesson-body">
           <ul>${l.topics.map((t) => `<li>${t}</li>`).join("")}</ul>
           <div class="exam-focus"><strong>So wird's geprüft:</strong> ${l.examFocus}</div>
+          <div class="lesson-quiz">
+            <div class="lq-head">📝 Inhaltsabfrage <span class="lq-score"></span></div>
+            <div class="lq-body"></div>
+            <div class="lq-foot"></div>
+          </div>
         </div>`;
 
       const headEl = $(".lesson-head", lesson);
@@ -309,14 +320,14 @@ function renderLehrplan() {
         if (e.target === check) return;
         lesson.classList.toggle("open");
       });
-      const toggleDone = (e) => {
-        e.stopPropagation();
-        const nowDone = !state.done[l.id];
+      const setDone = (nowDone, fromQuiz) => {
         if (nowDone) {
           state.done[l.id] = true;
-          const r = check.getBoundingClientRect();
-          confettiBurst(r.left + r.width / 2, r.top + r.height / 2);
-          toast(`„${l.title}" abgehakt – weiter so!`);
+          if (!fromQuiz) {
+            const r = check.getBoundingClientRect();
+            confettiBurst(r.left + r.width / 2, r.top + r.height / 2);
+            toast(`„${l.title}" abgehakt – weiter so!`);
+          }
         } else {
           delete state.done[l.id];
         }
@@ -325,10 +336,21 @@ function renderLehrplan() {
         saveState();
         updateLehrplanProgress();
       };
+      const toggleDone = (e) => {
+        e.stopPropagation();
+        setDone(!state.done[l.id], false);
+      };
       check.addEventListener("click", toggleDone);
       check.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") toggleDone(e);
       });
+
+      // Inhaltsabfrage aufbauen
+      if (quiz.length) {
+        renderLessonQuiz(lesson, l, quiz, setDone);
+      } else {
+        $(".lesson-quiz", lesson).hidden = true;
+      }
 
       block.appendChild(lesson);
     });
@@ -348,6 +370,89 @@ function updateLehrplanProgress() {
   if (fill) fill.style.width = pct + "%";
   const label = $("#lehrplan-progress-label");
   if (label) label.textContent = `${done}/${lessons.length} · ${pct}%`;
+}
+
+// Inhaltsabfrage einer Lerneinheit aufbauen (frischer Durchgang)
+function renderLessonQuiz(lesson, l, quiz, setDone) {
+  const body = $(".lq-body", lesson);
+  const foot = $(".lq-foot", lesson);
+  const scoreEl = $(".lq-score", lesson);
+  const repBadge = $(".rep-badge", lesson);
+  const pass = Math.ceil(quiz.length * 0.6); // ab 60 % gilt als bestanden
+
+  body.innerHTML = "";
+  foot.innerHTML = "";
+  scoreEl.textContent = "";
+
+  let answered = 0;
+  let correct = 0;
+
+  quiz.forEach((q, qi) => {
+    const item = el("div", "lq-q");
+    const opts = q.opts
+      .map((o, oi) => `<button class="lq-opt" data-o="${oi}">${o}</button>`)
+      .join("");
+    item.innerHTML = `
+      <div class="lq-frage">${qi + 1}. ${q.q}</div>
+      <div class="lq-opts">${opts}</div>
+      <div class="lq-fb">${q.fb}</div>`;
+    body.appendChild(item);
+
+    $$(".lq-opt", item).forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (item.classList.contains("answered")) return;
+        item.classList.add("answered");
+        const chosen = +btn.dataset.o;
+        $$(".lq-opt", item).forEach((b) => {
+          const bo = +b.dataset.o;
+          if (bo === q.correct) b.classList.add("correct");
+          else if (b === btn) b.classList.add("wrong");
+        });
+        answered++;
+        if (chosen === q.correct) correct++;
+
+        if (answered === quiz.length) finishQuiz();
+      });
+    });
+  });
+
+  function finishQuiz() {
+    scoreEl.textContent = `${correct}/${quiz.length} richtig`;
+    scoreEl.className = "lq-score " + (correct >= pass ? "ok" : "fail");
+
+    // beste Quote merken
+    if ((state.best[l.id] || 0) < correct) state.best[l.id] = correct;
+
+    foot.innerHTML = "";
+    const msg = el(
+      "div",
+      "lq-msg",
+      correct >= pass
+        ? `✅ Bestanden! ${correct}/${quiz.length} richtig.`
+        : `🔁 Noch nicht sicher (${correct}/${quiz.length}). Inhalt nochmal ansehen und wiederholen.`
+    );
+    foot.appendChild(msg);
+
+    const retry = el("button", "btn ghost lq-retry", "↻ Abfrage wiederholen");
+    retry.addEventListener("click", () => {
+      state.reps[l.id] = (state.reps[l.id] || 0) + 1;
+      if (repBadge) {
+        repBadge.hidden = false;
+        repBadge.textContent = `${state.reps[l.id]}× wiederholt`;
+      }
+      saveState();
+      renderLessonQuiz(lesson, l, quiz, setDone); // frischer Durchgang
+    });
+    foot.appendChild(retry);
+
+    if (correct >= pass && !state.done[l.id]) {
+      setDone(true, true);
+      const r = scoreEl.getBoundingClientRect();
+      confettiBurst(r.left + r.width / 2, r.top + r.height / 2);
+      toast(`Inhaltsabfrage „${l.title}" bestanden! ✅`);
+    }
+    saveState();
+  }
 }
 
 /* ====================================================================
