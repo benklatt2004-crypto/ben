@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AP2 Lernplan · Industriekaufmann/-frau</title>
+    <meta
+      name="description"
+      content="Interaktiver Lehrplan und Terminplaner für die Abschlussprüfung Teil 2 (AP2) Industriekaufmann/-frau – Neuordnung."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">AP2</span>
+        <div>
+          <h1>Lernplan Industriekaufmann/-frau</h1>
+          <p class="subtitle">Abschlussprüfung Teil 2 · Neuordnung</p>
+        </div>
+      </div>
+      <nav class="tabs" id="tabs">
+        <button class="tab active" data-view="dashboard">Übersicht</button>
+        <button class="tab" data-view="lehrplan">Lehrplan</button>
+        <button class="tab" data-view="fragen">Prüfungsfragen verstehen</button>
+        <button class="tab" data-view="planer">Terminplaner</button>
+      </nav>
+    </header>
+
+    <main id="app">
+      <!-- Dashboard -->
+      <section class="view active" id="view-dashboard">
+        <div class="hero">
+          <h2>Willkommen zu deiner Prüfungsvorbereitung</h2>
+          <p>
+            Dieser Plan führt dich durch alle vier Prüfungsbereiche der AP2 und
+            trainiert gezielt das Verständnis von Prüfungsfragen. Starte diese
+            Woche und teile dir die Einheiten so ein, wie es zu dir passt.
+          </p>
+          <div class="schedule-banner" id="schedule-banner"></div>
+        </div>
+
+        <div class="stat-grid" id="stat-grid"></div>
+
+        <h3 class="section-title">Deine Prüfungsbereiche</h3>
+        <div class="area-grid" id="area-grid"></div>
+
+        <div class="next-up card">
+          <h3>Als Nächstes dran</h3>
+          <div id="next-up-content"></div>
+        </div>
+      </section>
+
+      <!-- Lehrplan -->
+      <section class="view" id="view-lehrplan">
+        <h2>Lehrplan – alle Lerneinheiten</h2>
+        <p class="lead">
+          Hake ab, was du beherrschst. Jede Einheit zeigt dir die Inhalte und
+          einen Hinweis, <strong>wie</strong> das Thema in der Prüfung abgefragt
+          wird.
+        </p>
+        <div class="progress-row">
+          <div class="progress-track"><div class="progress-fill" id="lehrplan-progress"></div></div>
+          <span id="lehrplan-progress-label"></span>
+        </div>
+        <div id="lehrplan-content"></div>
+      </section>
+
+      <!-- Prüfungsfragen verstehen -->
+      <section class="view" id="view-fragen">
+        <h2>Prüfungsfragen verstehen</h2>
+        <p class="lead">
+          Die meisten Punkte gehen nicht durch fehlendes Wissen verloren,
+          sondern weil die Frage nicht passgenau beantwortet wird. Lerne, die
+          <strong>Operatoren</strong> und <strong>Anforderungsbereiche</strong>
+          zu lesen.
+        </p>
+
+        <h3 class="section-title">Operatoren nach Anforderungsbereich</h3>
+        <div id="operatoren-content"></div>
+
+        <h3 class="section-title">Strategie-Spickzettel</h3>
+        <div class="tipp-grid" id="tipp-content"></div>
+
+        <div class="card quiz-card">
+          <h3>Mini-Training: Operator erkennen</h3>
+          <p>Welche Antworttiefe verlangt die Aufgabe? Klicke deine Einschätzung.</p>
+          <div id="quiz-content"></div>
+        </div>
+      </section>
+
+      <!-- Terminplaner -->
+      <section class="view" id="view-planer">
+        <h2>Terminplaner</h2>
+        <p class="lead">
+          Lege deine Lern-Slots an und ordne jedem Slot Lerneinheiten zu. Erste
+          Einheit: <strong>Freitag, 05.06.2026 (2 h)</strong>, danach 2× pro
+          Woche à 2 h. Alles frei anpassbar.
+        </p>
+
+        <div class="planer-actions">
+          <button class="btn primary" id="add-session">+ Lern-Slot hinzufügen</button>
+          <button class="btn ghost" id="autofill">Vorschlag automatisch füllen</button>
+          <button class="btn ghost danger" id="reset-plan">Plan zurücksetzen</button>
+        </div>
+
+        <div class="planer-layout">
+          <div class="planer-sessions" id="planer-sessions"></div>
+          <aside class="planer-pool">
+            <h3>Noch nicht eingeplant</h3>
+            <p class="muted small">Ziehe eine Einheit in einen Slot oder nutze das +.</p>
+            <div id="lesson-pool"></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>
+        Fortschritt &amp; Plan werden lokal in deinem Browser gespeichert
+        (kein Server, keine Anmeldung). Inhalte sind eine Orientierungshilfe –
+        maßgeblich ist die aktuelle Ausbildungsordnung &amp; der Rahmenlehrplan.
+      </p>
+    </footer>
+
+    <!-- Modal: Einheit zu Slot zuordnen -->
+    <div class="modal-backdrop" id="modal-backdrop" hidden>
+      <div class="modal">
+        <h3 id="modal-title">Lerneinheit zuordnen</h3>
+        <div id="modal-body"></div>
+        <div class="modal-actions">
+          <button class="btn ghost" id="modal-close">Schließen</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
