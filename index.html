@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Prüfungsfragen verstehen · Industriekaufmann/-frau (AO 2024)</title>
+<meta name="description" content="Lernmethode zum Verstehen von IHK-Prüfungsfragen – Werde dein eigener Zuhörer. Mit interaktivem Frage-Trainer." />
+<style>
+  :root{
+    --bg:#f4f6f9;
+    --white:#ffffff;
+    --card:#ffffff;
+    --card2:#f0f4f8;
+    --ink:#1a2332;
+    --muted:#6b7a8d;
+    --accent:#e8700a;
+    --accent-light:#fff4ea;
+    --accent2:#0057b8;
+    --accent2-light:#e8f0fc;
+    --good:#1a7f4b;
+    --good-light:#e6f7ee;
+    --warn:#c0392b;
+    --warn-light:#fdf0ef;
+    --line:#dde2ea;
+    --shadow:0 2px 8px rgba(0,0,0,.08);
+    --shadow-md:0 4px 16px rgba(0,0,0,.1);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent2)}
+
+  /* ── HEADER ── */
+  header{
+    background:linear-gradient(135deg,#1a2e4a 0%,#0d3b7c 60%,#1a5fa8 100%);
+    color:#fff;
+    padding:72px 20px 52px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  header::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(255,255,255,.08),transparent);
+  }
+  header .badge{
+    display:inline-block;
+    font-size:.78rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#ffc060;
+    border:1px solid rgba(255,192,96,.4);
+    border-radius:999px;
+    padding:5px 16px;
+    margin-bottom:20px;
+    position:relative;
+  }
+  header h1{
+    font-size:clamp(1.9rem,4.5vw,3rem);
+    margin:0 0 14px;
+    line-height:1.12;
+    font-weight:800;
+    position:relative;
+  }
+  header h1 em{color:#ffc060; font-style:normal}
+  header p{
+    color:rgba(255,255,255,.82);
+    max-width:640px;
+    margin:0 auto;
+    font-size:1.08rem;
+    position:relative;
+  }
+  nav.toc{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+    margin-top:28px;
+    position:relative;
+  }
+  nav.toc a{
+    background:rgba(255,255,255,.15);
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:999px;
+    padding:7px 16px;
+    text-decoration:none;
+    color:#fff;
+    font-size:.9rem;
+    transition:.18s;
+    backdrop-filter:blur(4px);
+  }
+  nav.toc a:hover{background:rgba(255,255,255,.28)}
+
+  /* ── LAYOUT ── */
+  .wrap{max-width:900px; margin:0 auto; padding:0 20px}
+  section{padding:52px 0; border-bottom:1px solid var(--line)}
+  section:last-of-type{border-bottom:none}
+
+  /* ── TYPOGRAPHY ── */
+  h2{
+    font-size:1.6rem;
+    margin:0 0 8px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:var(--ink);
+  }
+  h2 .n{
+    font-size:.82rem;
+    background:var(--accent);
+    color:#fff;
+    font-weight:800;
+    width:32px;
+    height:32px;
+    display:grid;
+    place-items:center;
+    border-radius:9px;
+    flex:none;
+  }
+  h3{margin:28px 0 10px; font-size:1.12rem; color:var(--accent2)}
+  .lead{color:var(--muted); margin-bottom:20px; font-size:1.02rem}
+  p{margin:0 0 14px}
+
+  /* ── QUOTE ── */
+  .quote{
+    border-left:4px solid var(--accent);
+    background:var(--accent-light);
+    padding:16px 20px;
+    border-radius:0 12px 12px 0;
+    margin:20px 0;
+    color:var(--ink);
+    font-size:1.02rem;
+  }
+
+  /* ── STEPS ── */
+  .steps{display:grid; gap:12px; margin-top:20px}
+  .step{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px 20px;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:16px;
+    align-items:start;
+    box-shadow:var(--shadow);
+    transition:.18s;
+  }
+  .step:hover{box-shadow:var(--shadow-md); transform:translateY(-1px)}
+  .step .num{
+    background:var(--accent);
+    color:#fff;
+    font-weight:800;
+    width:36px;
+    height:36px;
+    border-radius:10px;
+    display:grid;
+    place-items:center;
+    flex:none;
+    font-size:1rem;
+  }
+  .step h4{margin:0 0 5px; font-size:1.05rem; color:var(--ink)}
+  .step p{margin:0; color:var(--muted); font-size:.97rem}
+
+  /* ── TABLE ── */
+  .table-wrap{overflow-x:auto; margin:18px 0}
+  table{width:100%; border-collapse:collapse; font-size:.97rem; background:var(--white); border-radius:12px; overflow:hidden; box-shadow:var(--shadow)}
+  th{background:#f0f4fa; color:var(--accent2); font-weight:700; padding:12px 16px; text-align:left; border-bottom:2px solid var(--line)}
+  td{padding:11px 16px; border-bottom:1px solid var(--line); vertical-align:top; color:var(--ink)}
+  tr:last-child td{border-bottom:none}
+  td code{background:#eef2f8; padding:2px 7px; border-radius:5px; color:var(--accent2); font-size:.92rem}
+
+  /* ── CARDS ── */
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-top:20px}
+  .dl{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px;
+    text-decoration:none;
+    color:var(--ink);
+    display:block;
+    box-shadow:var(--shadow);
+    transition:.18s;
+  }
+  .dl:hover{border-color:var(--accent); box-shadow:var(--shadow-md); transform:translateY(-2px)}
+  .dl .t{font-weight:700; margin-bottom:5px; font-size:1rem}
+  .dl .s{color:var(--muted); font-size:.9rem}
+
+  /* ── QUIZ ── */
+  .q{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px 24px;
+    margin:18px 0;
+    box-shadow:var(--shadow);
+    transition:.2s;
+  }
+  .q:hover{box-shadow:var(--shadow-md)}
+  .q .tag{
+    font-size:.75rem;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--accent2);
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .q h4{margin:0 0 12px; font-size:1.12rem; color:var(--ink)}
+  .q .prompt{color:#374151; line-height:1.7}
+  .q textarea{
+    width:100%;
+    margin-top:16px;
+    background:var(--bg);
+    color:var(--ink);
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    font:inherit;
+    font-size:.97rem;
+    min-height:90px;
+    resize:vertical;
+    transition:.18s;
+  }
+  .q textarea:focus{outline:none; border-color:var(--accent2); background:#fff; box-shadow:0 0 0 3px rgba(0,87,184,.1)}
+  .q .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
+
+  button{
+    background:var(--accent);
+    color:#fff;
+    border:0;
+    border-radius:10px;
+    padding:10px 18px;
+    font-weight:700;
+    cursor:pointer;
+    font-size:.95rem;
+    transition:.18s;
+  }
+  button:hover{background:#c95e00}
+  button.ghost{
+    background:transparent;
+    color:var(--accent2);
+    border:1.5px solid var(--accent2);
+  }
+  button.ghost:hover{background:var(--accent2-light)}
+
+  .solution{
+    display:none;
+    margin-top:18px;
+    background:var(--good-light);
+    border:1.5px solid #a8dfc0;
+    border-radius:12px;
+    padding:18px 20px;
+  }
+  .solution.open{display:block; animation:fade .22s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .solution .label{font-weight:700; color:var(--good); margin-bottom:8px; font-size:1rem}
+  .solution ul{margin:0; padding-left:20px; color:var(--ink)}
+  .solution ul li{margin:5px 0}
+  .solution .trip{
+    margin-top:14px;
+    background:var(--warn-light);
+    border:1px solid #f5c6c3;
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:.95rem;
+    color:var(--warn);
+  }
+  .solution .trip b{color:var(--warn)}
+
+  .hint-box{
+    display:none;
+    margin-top:14px;
+    background:var(--accent2-light);
+    border:1.5px solid #b3ceee;
+    border-radius:10px;
+    padding:12px 16px;
+    font-size:.97rem;
+    color:var(--accent2);
+  }
+  .hint-box strong{color:#003d82}
+
+  /* ── NOTFALL ── */
+  ul.notfall{list-style:none; padding:0; margin:18px 0; display:grid; gap:10px}
+  ul.notfall li{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 18px;
+    box-shadow:var(--shadow);
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  ul.notfall li .icon{font-size:1.3rem; flex:none; margin-top:1px}
+
+  /* ── FOOTER ── */
+  footer{
+    background:var(--ink);
+    color:rgba(255,255,255,.75);
+    padding:40px 20px 60px;
+    text-align:center;
+    margin-top:0;
+  }
+  footer strong{color:#fff}
+  footer p{margin:6px 0; font-size:.97rem}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">IHK Abschlussprüfung Teil 1 · AO 2024</div>
+  <h1>Prüfungsfragen <em>verstehen</em></h1>
+  <p>Die <strong>„Werde dein eigener Zuhörer"</strong>-Methode für Industriekaufmann/-frau –
+     Leistungserstellung, Logistik, Beschaffung &amp; Buchhaltung.</p>
+  <nav class="toc">
+    <a href="#idee">Die Idee</a>
+    <a href="#ritual">5-Schritte-Ritual</a>
+    <a href="#signale">Signalwörter</a>
+    <a href="#notfall">Denkblockade</a>
+    <a href="#trainer">Frage-Trainer</a>
+    <a href="#material">Material</a>
+  </nav>
+</header>
+
+<div class="wrap">
+
+  <section id="idee">
+    <h2><span class="n">→</span> Deine Ausgangslage – ehrlich benannt</h2>
+    <p class="lead">Du kannst gut erklären. Wenn du jemandem etwas erzählst, <em>kommt es an</em> –
+      weil du unbewusst übersetzt: Du suchst das Schlüsselwort, lässt Ballast weg und machst es dem Zuhörer einfach.</p>
+    <p>In der Prüfung sitzt aber <strong>kein Zuhörer</strong> vor dir. Niemand, für den du
+      vereinfachst. Deshalb bleibt die Frage in ihrer „schweren" Form stehen – und genau da entsteht
+      die <strong>Denkblockade</strong>. Es ist meistens kein Wissensproblem. Das Wissen ist da.
+      Es kommt nur nicht raus, weil die Frage nicht „übersetzt" wurde.</p>
+    <div class="quote">
+      <strong>Kernidee:</strong> Du machst dich selbst zum Zuhörer. Bevor du antwortest, erklärst du
+      <em>dir</em> die Frage so einfach, wie du sie einem Freund erklären würdest.
+      Sobald die Frage einfach ist, ist die Antwort meistens schon da.
+    </div>
+  </section>
+
+  <section id="ritual">
+    <h2><span class="n">1</span> Das Ritual: 5 Schritte auf jede Frage</h2>
+    <p class="lead">Am Anfang bewusst und langsam – nach einer Woche Übung in 20 Sekunden.</p>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><div>
+        <h4>Übersetzen – „Erklär's einem 12-Jährigen"</h4>
+        <p>Sag die Frage in deinen eigenen, einfachen Worten: <em>„Die Frage will eigentlich nur wissen, ob / wie / warum …"</em> – Sobald dieser Satz steht, ist die Blockade fast immer weg.</p>
+      </div></div>
+      <div class="step"><div class="num">2</div><div>
+        <h4>Drei Dinge markieren</h4>
+        <p><strong>Thema</strong> (worum geht's?) &nbsp;·&nbsp; <strong>Menge</strong> (wie viele? „4 Gründe") &nbsp;·&nbsp;
+        <strong>Einschränkung</strong> – das kleine Wort, das eingrenzt: <em>„unabhängig von der Kostensituation"</em>,
+        <em>„im Verantwortungsbereich der Fertigung"</em>. Punkt 3 ist der häufigste Fallenstein.</p>
+      </div></div>
+      <div class="step"><div class="num">3</div><div>
+        <h4>Mit dem Fall verbinden</h4>
+        <p>Die Frage ist nie abstrakt. Sie zeigt immer auf die Geschichte (Schoko-Tender AG, Protein-Riegel …).
+        Deine Antwort soll den Fall anfassen, nicht nur das Lehrbuch.</p>
+      </div></div>
+      <div class="step"><div class="num">4</div><div>
+        <h4>Gerüst bauen, dann füllen</h4>
+        <p>Erst das Skelett hinschreiben: <code>1) … 2) … 3) … 4) …</code> –
+        So produzierst du genau die geforderte Anzahl und verzettelst dich nicht.</p>
+      </div></div>
+      <div class="step"><div class="num">5</div><div>
+        <h4>Gegencheck</h4>
+        <p>Frage noch einmal lesen: <em>„Habe ich genau das beantwortet, was gefragt war?
+        Richtige Anzahl? Einschränkung getroffen?"</em></p>
+      </div></div>
+    </div>
+  </section>
+
+  <section id="signale">
+    <h2><span class="n">2</span> Signalwörter – was die Frage wirklich will</h2>
+    <p class="lead">Nicht Begriffe auswendig lernen – auf Signalwörter horchen und übersetzen, was die Frage <em>von dir will</em>.</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Wenn in der Frage steht …</th><th>… dann will sie eigentlich</th></tr>
+        <tr><td>„warum", „begründen", „weil"</td><td>eine <strong>Kette</strong>: <em>Weil X, deshalb folgt Y.</em> Ein Stichwort allein reicht nicht.</td></tr>
+        <tr><td>„beschreiben", „erläutern"</td><td>einen <strong>ganzen Satz</strong> mit Erklärung – kein einzelnes Wort.</td></tr>
+        <tr><td>„nennen", „geben Sie an"</td><td><strong>Stichworte</strong> genügen – aber die richtige <strong>Anzahl</strong>.</td></tr>
+        <tr><td>„ermitteln", „berechnen"</td><td><strong>Rechenweg</strong> + Ergebnis + Einheit. Ohne Weg keine vollen Punkte.</td></tr>
+        <tr><td>„je ein / jeweils"</td><td>für <strong>jeden</strong> Fall <strong>einzeln</strong> etwas liefern.</td></tr>
+        <tr><td>„Tragen Sie in den Lösungsbogen ein"</td><td><strong>Multiple Choice</strong>: nur <strong>eine</strong> Aussage ist 100 % richtig.</td></tr>
+      </table>
+    </div>
+    <h3>Die Multiple-Choice-Falle</h3>
+    <p>Die falschen Antworten sind absichtlich plausibel. Suche pro Aussage
+      <strong>das eine Kipp-Wort</strong> (<code>immer</code>, <code>ausschließlich</code>,
+      <code>identisch mit</code>, <code>keine Fristen</code>), streiche das sicher Falsche –
+      die übrige Aussage muss in <em>jedem</em> Detail stimmen.</p>
+  </section>
+
+  <section id="notfall">
+    <h2><span class="n">3</span> Notfallplan gegen die Denkblockade</h2>
+    <ul class="notfall">
+      <li><div class="icon">🔄</div><div><strong>Laut übersetzen:</strong> „Die Frage will nur wissen, ob …" – fang den Satz an, das Gehirn füllt das Ende oft selbst.</div></li>
+      <li><div class="icon">🧑‍🏫</div><div><strong>Erklär's einem Praktikanten:</strong> Wie würdest du es einem neuen Azubi in einem Satz sagen? Genau das schreibst du hin.</div></li>
+      <li><div class="icon">🏭</div><div><strong>Vom Fall her denken:</strong> Was würde in der echten Schoko-Tender AG passieren? Praxis schlägt Theorie-Blockade.</div></li>
+      <li><div class="icon">↔️</div><div><strong>Gegenteil testen:</strong> Du weißt keinen Vorteil? Überleg den Nachteil – und dreh ihn um.</div></li>
+      <li><div class="icon">✏️</div><div><strong>Anfangen schlägt Perfektion:</strong> Schreib Punkt 1 von 4 hin. Der Rest kommt fast immer, sobald der Stift läuft.</div></li>
+    </ul>
+    <div class="quote">„Wenn ich es jemandem erklären könnte, kann ich es auch aufschreiben. Also erkläre ich es mir zuerst selbst."</div>
+  </section>
+
+  <section id="trainer">
+    <h2><span class="n">4</span> Frage-Trainer</h2>
+    <p class="lead">Gleiche Welt wie die Altprüfung (Schoko-Tender AG), neue Situationen.
+      Erst selbst antworten – dann Musterlösung &amp; Verständnis-Hilfe aufklappen.</p>
+    <div id="quizzes"></div>
+  </section>
+
+  <section id="material">
+    <h2><span class="n">5</span> Material</h2>
+    <div class="cards">
+      <a class="dl" href="Pr%C3%BCfung%20IK%202025.pdf">
+        <div class="t">📄 Altprüfung Herbst 2025</div>
+        <div class="s">Aufgabenheft (PDF)</div>
+      </a>
+      <a class="dl" href="Pr%C3%BCfung%20IK%202025%20L%C3%96SUNGEN.pdf">
+        <div class="t">✅ Lösungserläuterungen</div>
+        <div class="s">Musterlösungen (PDF)</div>
+      </a>
+      <a class="dl" href="Lernmethode-Pruefungsfragen-verstehen.md">
+        <div class="t">📝 Lernmethode</div>
+        <div class="s">Volltext als Markdown</div>
+      </a>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <p><strong>Spickzettel:</strong> 1. Übersetzen · 2. Markieren (Thema · Anzahl · Einschränkung) · 3. Verbinden · 4. Gerüst · 5. Gegencheck</p>
+  <p style="margin-top:8px;color:rgba(255,255,255,.5)">"Wenn ich es jemandem erklären kann, kann ich es aufschreiben. Also bin ich mein eigener Zuhörer."</p>
+</footer>
+
+<script>
+const QUIZ = [
+ {
+  area:"Leistungserstellung · Make-or-Buy",
+  q:"Die Schoko-Tender AG überlegt, die Papp-Faltschachteln für den Protein-Riegel nicht mehr selbst zu fertigen, sondern von einer Druckerei zu beziehen. <strong>Nennen Sie 4 Gründe, die – unabhängig vom reinen Preis – für den Fremdbezug sprechen.</strong>",
+  trans:"Die wollen eigentlich nur wissen: Warum Schachteln kaufen statt selber machen – aber <em>nicht</em> weil's billiger ist.",
+  sol:["Keine eigenen Maschinen/Personal für Druck nötig → Konzentration aufs Kerngeschäft (Schokolade).","Höheres Know-how/Qualität des Spezialisten (Druckbild, Stanzung).","Keine Lagerung von Verpackungsrohstoffen → weniger Kapitalbindung.","Flexibilität bei Mengen-/Saisonschwankungen; kein Investitionsrisiko in Druckanlagen."],
+  trip:"Wer „ist günstiger\" schreibt, verfehlt die Einschränkung <b>„unabhängig vom Preis\"</b> – inhaltlich nicht falsch, aber an der Frage vorbei = kein Punkt."
+ },
+ {
+  area:"Leistungserstellung · Kostenverhalten",
+  q:"Die geplante Tagesproduktion steigt dauerhaft um 20 %. <strong>Formulieren Sie je eine Konsequenz für die variablen Stückkosten (linearer Verlauf) und für die fixen Stückkosten.</strong>",
+  trans:"Die wollen wissen: Wenn wir mehr Riegel machen, was passiert pro Stück – einmal variabel, einmal fix?",
+  sol:["Variable Stückkosten: bleiben <b>gleich</b> – pro Riegel immer gleich viel Zutaten/Strom.","Fixe Stückkosten: <b>sinken</b> – feste Kosten verteilen sich auf mehr Riegel (Fixkostendegression)."],
+  trip:"„Variable Kosten steigen\" verwechselt <b>Gesamt</b>kosten mit <b>Stück</b>kosten. Die Frage sagt klar <em>Stückkosten</em> → Einschränkung markieren!"
+ },
+ {
+  area:"Logistik · Lagerkennzahl",
+  q:"Die Schoko-Tender AG <strong>erhöht</strong> die durchschnittliche Bestellmenge an Sojaprotein bei gleichem Jahresbedarf. <strong>Wie wirkt sich das auf Umschlagshäufigkeit und Kapitalbindung aus?</strong>",
+  trans:"Die wollen wissen: Größere Mengen seltener bestellen – was macht das mit (a) wie oft das Lager dreht und (b) wie viel Geld darin steckt?",
+  sol:["Umschlagshäufigkeit: <b>sinkt</b> – größerer Durchschnittsbestand bei gleichem Verbrauch → Lager dreht sich seltener.","Kapitalbindung: <b>steigt</b> – mehr Ware liegt im Schnitt → mehr gebundenes Geld."],
+  trip:"Stell dir das Lager als Geldspeicher vor: mehr Ware = mehr totes Geld = höhere Bindung, fließt langsamer = niedrigerer Umschlag."
+ },
+ {
+  area:"Beschaffung · Mengenrechnung mit Verlust",
+  q:"Es sollen 300 000 Protein-Riegel mit je 30 % Proteingehalt produziert werden; ein Riegel wiegt 50 g. Es ist mit <strong>0,5 % Verlust</strong> zu rechnen. <strong>Berechnen Sie die zu beschaffende Menge an Sojaprotein in kg</strong> (2 Nachkommastellen).",
+  trans:"Die wollen wissen: Wie viel Soja muss ich kaufen, damit nach 0,5 % Schwund noch genug für alle Riegel da ist?",
+  sol:["Gesamtgewicht: 300 000 × 50 g = 15 000 kg","Proteinbedarf (30 %): 15 000 × 0,30 = 4 500 kg","Verlust einrechnen: 4 500 ÷ 0,995 = <b>4 522,61 kg</b>"],
+  trip:"Verlust <b>nicht</b> als ×1,005 rechnen, sondern <b>÷ 0,995</b>. Die beschaffte Menge ist der 100-%-Wert, von dem die 0,5 % abgehen."
+ },
+ {
+  area:"Beschaffung · Wareneingang (Multiple Choice)",
+  q:"Beim Wareneingang ist eine Palette Sojaprotein-Säcke sichtbar durchnässt, der Frachtführer ist noch vor Ort. <strong>Welche Aussage ist richtig?</strong><br><br>1. Es besteht bis zu 2 Jahre Zeit, den Mangel anzuzeigen.<br>2. Der Mangel muss ausschließlich telefonisch gerügt werden.<br>3. Den äußeren Schaden vom Frachtführer auf dem Lieferschein bestätigen lassen.<br>4. Äußere Schäden erst der Rechnungsprüfung melden.",
+  trans:"Die wollen wissen: Was ist jetzt, solange der Frachtführer noch da ist, der klügste Schritt?",
+  sol:["<b>Richtig: 3.</b>","(1) „2 Jahre\" – bei äußeren Mängeln gilt <em>unverzüglich</em>. ✗","(2) „ausschließlich telefonisch\" – kein schriftlicher Nachweis. ✗","(4) „erst der Rechnungsprüfung\" – der Zeuge (Frachtführer) ist dann längst weg. ✗"],
+  trip:"Such pro Aussage das Kipp-Wort. <b>„ausschließlich\"</b>, <b>„identisch mit\"</b>, <b>„2 Jahre\"</b> – solche Worte kippen die Aussage fast immer."
+ },
+ {
+  area:"Buchhaltung · Skonto / Zahlbetrag",
+  q:"Eine Eingangsrechnung über <strong>8.000,00 € netto</strong> (zzgl. 19 % USt) wird innerhalb der Skontofrist beglichen; vereinbart sind <strong>2 % Skonto</strong>. <strong>Ermitteln Sie den überwiesenen Betrag in €.</strong>",
+  trans:"Die wollen wissen: Wie viel überweise ich, wenn ich 2 % Früher-zahlen-Rabatt vom Bruttobetrag abziehe?",
+  sol:["Brutto: 8.000,00 × 1,19 = 9.520,00 €","Skonto 2 %: 9.520,00 × 0,02 = 190,40 €","Überweisung: 9.520,00 − 190,40 = <b>9.329,60 €</b>"],
+  trip:"Skonto wird vom <b>Brutto</b>betrag gezogen, nicht vom Netto – du bekommst den Nachlass auf die Summe, die du tatsächlich zahlen müsstest."
+ }
+];
+
+const root = document.getElementById('quizzes');
+QUIZ.forEach((item, i) => {
+  const el = document.createElement('div');
+  el.className = 'q';
+  el.innerHTML = `
+    <div class="tag">${item.area}</div>
+    <h4>Übung ${i+1}</h4>
+    <div class="prompt">${item.q}</div>
+    <textarea placeholder="Erst übersetzen (&bdquo;Die wollen eigentlich nur wissen &hellip;&ldquo;), Einschr&auml;nkung markieren – dann deine Antwort …"></textarea>
+    <div class="row">
+      <button data-act="show">Musterlösung &amp; Verständnis-Hilfe</button>
+      <button class="ghost" data-act="hint">Übersetzungs-Tipp</button>
+    </div>
+    <div class="hint-box"><strong>So machst du dir die Frage einfach:</strong><br>${item.trans}</div>
+    <div class="solution">
+      <div class="label">✓ Musterlösung</div>
+      <ul>${item.sol.map(s=>`<li>${s}</li>`).join('')}</ul>
+      <div class="trip">⚠️ <b>Häufiger Fehler:</b> ${item.trip}</div>
+    </div>`;
+  const sol = el.querySelector('.solution');
+  const hint = el.querySelector('.hint-box');
+  el.querySelector('[data-act="show"]').addEventListener('click', e=>{
+    sol.classList.toggle('open');
+    e.target.textContent = sol.classList.contains('open') ? 'Musterlösung ausblenden' : 'Musterlösung & Verständnis-Hilfe';
+  });
+  el.querySelector('[data-act="hint"]').addEventListener('click', e=>{
+    const open = hint.style.display === 'block';
+    hint.style.display = open ? 'none' : 'block';
+    e.target.textContent = open ? 'Übersetzungs-Tipp' : 'Tipp ausblenden';
+  });
+  root.appendChild(el);
+});
+</script>
+</body>
+</html>
