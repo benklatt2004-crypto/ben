@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory – Aurubis Lernspiele</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .memory-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .pairs-selector label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--aurubis-blue);
+      margin-right: 8px;
+    }
+    .pairs-selector select {
+      border: 2px solid var(--aurubis-grey-mid);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--aurubis-grey-dark);
+      background: white;
+      cursor: pointer;
+    }
+
+    .memory-board {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .memory-board.pairs-6  { grid-template-columns: repeat(4, 1fr); }
+    .memory-board.pairs-8  { grid-template-columns: repeat(4, 1fr); }
+    .memory-board.pairs-10 { grid-template-columns: repeat(5, 1fr); }
+    .memory-board.pairs-12 { grid-template-columns: repeat(6, 1fr); }
+    @media (max-width: 600px) {
+      .memory-board { grid-template-columns: repeat(3, 1fr) !important; }
+    }
+
+    .memory-card {
+      aspect-ratio: 3 / 4;
+      cursor: pointer;
+      perspective: 600px;
+      min-height: 80px;
+    }
+    .card-inner {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.45s ease;
+      border-radius: 10px;
+    }
+    .memory-card.flipped .card-inner { transform: rotateY(180deg); }
+    .memory-card.matched .card-inner { transform: rotateY(180deg); }
+
+    .card-face {
+      position: absolute; inset: 0;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px;
+      text-align: center;
+      line-height: 1.4;
+      word-break: break-word;
+      hyphens: auto;
+    }
+    .card-back {
+      background: linear-gradient(135deg, var(--aurubis-blue), var(--aurubis-blue-mid));
+      color: var(--aurubis-white);
+      font-size: 22px;
+    }
+    .card-back::after { content: '🔲'; font-size: 28px; }
+    .card-front {
+      transform: rotateY(180deg);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .card-front.type-term {
+      background: linear-gradient(135deg, #fff8f0, #fff2e0);
+      border: 2px solid var(--aurubis-orange);
+      color: var(--aurubis-blue-dark);
+    }
+    .card-front.type-def {
+      background: linear-gradient(135deg, #f0f4ff, #e8eeff);
+      border: 2px solid var(--aurubis-blue-mid);
+      color: var(--aurubis-blue-dark);
+      font-size: 11px;
+      font-weight: 400;
+    }
+    .card-front.type-en {
+      background: linear-gradient(135deg, #f0fff4, #e8fce8);
+      border: 2px solid #22c55e;
+      color: #14532d;
+      font-style: italic;
+    }
+
+    .memory-card.matched .card-front {
+      background: linear-gradient(135deg, #d4f8e8, #bbf7d0) !important;
+      border-color: #22c55e !important;
+      opacity: 0.85;
+    }
+    .memory-card.no-match .card-inner {
+      animation: shake 0.4s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: rotateY(180deg) translateX(0); }
+      25% { transform: rotateY(180deg) translateX(-5px); }
+      75% { transform: rotateY(180deg) translateX(5px); }
+    }
+
+    .match-flash {
+      animation: matchPulse 0.5s ease;
+    }
+    @keyframes matchPulse {
+      0% { transform: rotateY(180deg) scale(1); }
+      50% { transform: rotateY(180deg) scale(1.08); }
+      100% { transform: rotateY(180deg) scale(1); }
+    }
+
+    .timer-display {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--aurubis-orange);
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--aurubis-grey);
+      margin-bottom: 16px;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .legend-swatch {
+      width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0;
+    }
+    .swatch-term { background: #fff2e0; border: 2px solid var(--aurubis-orange); }
+    .swatch-def  { background: #e8eeff; border: 2px solid var(--aurubis-blue-mid); }
+
+    .match-info {
+      background: var(--aurubis-white);
+      border: 1px solid var(--aurubis-grey-mid);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 16px;
+      display: none;
+    }
+    .match-info.visible { display: block; }
+    .match-info h4 { color: var(--aurubis-blue); font-size: 15px; margin-bottom: 6px; }
+    .match-info p { font-size: 13px; color: var(--aurubis-grey); line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo-area">
+      <div class="logo-icon">Au</div>
+      <div class="logo-text">
+        <span class="brand">Aurubis Lernspiele</span>
+        <span class="tagline">Deutsch lernen mit Kupfer</span>
+      </div>
+    </a>
+    <nav class="header-nav">
+      <a href="index.html">Startseite</a>
+      <a href="quiz.html">Quiz</a>
+      <a href="memory.html" class="active">Memory</a>
+      <a href="wordsearch.html">Wortsuche</a>
+      <a href="lueckentext.html">Lückentext</a>
+    </nav>
+  </div>
+</header>
+<div class="accent-bar"></div>
+
+<main>
+  <div class="game-page">
+    <a href="index.html" class="back-link">Zurück zur Startseite</a>
+
+    <div class="game-panel">
+      <div class="game-panel-header">
+        <div class="icon">🃏</div>
+        <div>
+          <h2>Memory</h2>
+          <p>Finde zusammengehörige Paare: Begriff und Definition</p>
+        </div>
+      </div>
+
+      <div class="game-panel-body">
+
+        <div id="setupArea">
+          <p class="section-title" style="margin-bottom:8px;">Spieleinstellungen</p>
+          <div class="memory-controls">
+            <div class="pairs-selector">
+              <label for="pairCount">Anzahl Paare:</label>
+              <select id="pairCount">
+                <option value="6">6 Paare (einfach)</option>
+                <option value="8" selected>8 Paare (mittel)</option>
+                <option value="10">10 Paare (schwer)</option>
+                <option value="12">12 Paare (sehr schwer)</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="startMemory">Spiel starten →</button>
+          </div>
+        </div>
+
+        <div id="gameArea" style="display:none;">
+          <div class="score-bar">
+            <div class="score-item">
+              <span class="score-value" id="memMatches">0</span>
+              <span class="score-label">Paare</span>
+            </div>
+            <div class="score-item">
+              <span class="score-value" id="memMoves">0</span>
+              <span class="score-label">Züge</span>
+            </div>
+            <div class="score-item">
+              <span class="score-value timer-display" id="memTimer">0:00</span>
+              <span class="score-label">Zeit</span>
+            </div>
+            <button class="btn btn-outline btn-sm" id="resetMemory">Neu starten</button>
+          </div>
+
+          <div class="legend">
+            <div class="legend-item"><div class="legend-swatch swatch-term"></div> Deutsch (Begriff)</div>
+            <div class="legend-item"><div class="legend-swatch swatch-def"></div> Definition</div>
+          </div>
+
+          <div class="memory-board" id="memoryBoard"></div>
+
+          <div class="match-info" id="matchInfo">
+            <h4 id="matchTitle"></h4>
+            <p id="matchDesc"></p>
+          </div>
+        </div>
+
+        <div class="result-screen" id="memResultScreen" style="display:none;">
+          <div class="result-icon">🎉</div>
+          <h3>Alle Paare gefunden!</h3>
+          <div class="final-score" id="memFinalScore"></div>
+          <p id="memResultMsg"></p>
+          <div class="result-actions">
+            <button class="btn btn-primary" id="memReplay">Nochmal spielen</button>
+            <a href="index.html" class="btn btn-secondary">Andere Spiele</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>Aurubis Lernspiele – Erstellt zu Bildungszwecken &nbsp;|&nbsp; <a href="https://www.aurubis.com" target="_blank" rel="noopener">aurubis.com</a></p>
+</footer>
+
+<script src="vocabulary.js"></script>
+<script>
+  let flipped = [];
+  let matched = 0;
+  let moves = 0;
+  let pairCount = 8;
+  let timerInterval = null;
+  let seconds = 0;
+  let canFlip = true;
+  let chosenVocab = [];
+
+  document.getElementById('startMemory').addEventListener('click', () => {
+    pairCount = parseInt(document.getElementById('pairCount').value);
+    document.getElementById('setupArea').style.display = 'none';
+    document.getElementById('gameArea').style.display = 'block';
+    startGame();
+  });
+
+  document.getElementById('resetMemory').addEventListener('click', () => {
+    clearInterval(timerInterval);
+    startGame();
+  });
+
+  document.getElementById('memReplay').addEventListener('click', () => {
+    document.getElementById('memResultScreen').style.display = 'none';
+    document.getElementById('setupArea').style.display = 'block';
+    document.getElementById('gameArea').style.display = 'none';
+  });
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function startGame() {
+    flipped = []; matched = 0; moves = 0; seconds = 0; canFlip = true;
+    chosenVocab = shuffle(VOCABULARY).slice(0, pairCount);
+
+    document.getElementById('memMatches').textContent = '0';
+    document.getElementById('memMoves').textContent = '0';
+    document.getElementById('memTimer').textContent = '0:00';
+    document.getElementById('matchInfo').classList.remove('visible');
+    document.getElementById('memResultScreen').style.display = 'none';
+    document.getElementById('gameArea').style.display = 'block';
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      seconds++;
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      document.getElementById('memTimer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    }, 1000);
+
+    // Build cards: each vocab item gets a "term" card and a "definition" card
+    const cards = [];
+    chosenVocab.forEach((v, i) => {
+      cards.push({ id: i, type: 'term',  text: v.term,       vocab: v });
+      cards.push({ id: i, type: 'def',   text: v.definition, vocab: v });
+    });
+    const shuffled = shuffle(cards);
+
+    const board = document.getElementById('memoryBoard');
+    const cols = pairCount <= 6 ? 4 : pairCount <= 8 ? 4 : pairCount <= 10 ? 5 : 6;
+    board.className = `memory-board pairs-${pairCount}`;
+    board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    board.innerHTML = '';
+
+    shuffled.forEach((card, idx) => {
+      const el = document.createElement('div');
+      el.className = 'memory-card';
+      el.dataset.pairId = card.id;
+      el.dataset.cardType = card.type;
+      el.dataset.idx = idx;
+      el.innerHTML = `
+        <div class="card-inner">
+          <div class="card-face card-back"></div>
+          <div class="card-face card-front type-${card.type}">${card.text}</div>
+        </div>`;
+      el.addEventListener('click', () => flipCard(el, card));
+      board.appendChild(el);
+    });
+  }
+
+  function flipCard(el, card) {
+    if (!canFlip) return;
+    if (el.classList.contains('flipped') || el.classList.contains('matched')) return;
+    if (flipped.length >= 2) return;
+
+    el.classList.add('flipped');
+    flipped.push({ el, card });
+
+    if (flipped.length === 2) {
+      moves++;
+      document.getElementById('memMoves').textContent = moves;
+      canFlip = false;
+      checkMatch();
+    }
+  }
+
+  function checkMatch() {
+    const [a, b] = flipped;
+    if (a.card.id === b.card.id && a.card.type !== b.card.type) {
+      // Match!
+      setTimeout(() => {
+        a.el.classList.add('matched');
+        b.el.classList.add('matched');
+        a.el.querySelector('.card-inner').classList.add('match-flash');
+        b.el.querySelector('.card-inner').classList.add('match-flash');
+
+        matched++;
+        document.getElementById('memMatches').textContent = matched;
+
+        // Show vocab info
+        const mi = document.getElementById('matchInfo');
+        const vocab = a.card.vocab;
+        document.getElementById('matchTitle').textContent = `✓ ${vocab.term} – Treffer!`;
+        document.getElementById('matchDesc').innerHTML =
+          `<strong>Definition:</strong> ${vocab.definition} &nbsp;|&nbsp; <em>Englisch: ${vocab.english}</em>`;
+        mi.classList.add('visible');
+
+        flipped = [];
+        canFlip = true;
+
+        if (matched === pairCount) {
+          clearInterval(timerInterval);
+          setTimeout(showMemResult, 800);
+        }
+      }, 400);
+    } else {
+      // No match
+      a.el.querySelector('.card-inner').classList.add('no-match');
+      b.el.querySelector('.card-inner').classList.add('no-match');
+      setTimeout(() => {
+        a.el.classList.remove('flipped');
+        b.el.classList.remove('flipped');
+        a.el.querySelector('.card-inner').classList.remove('no-match');
+        b.el.querySelector('.card-inner').classList.remove('no-match');
+        flipped = [];
+        canFlip = true;
+      }, 900);
+    }
+  }
+
+  function showMemResult() {
+    document.getElementById('gameArea').style.display = 'none';
+    document.getElementById('memResultScreen').style.display = 'block';
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    const timeStr = `${m}:${s.toString().padStart(2,'0')}`;
+    document.getElementById('memFinalScore').textContent = `${moves} Züge`;
+    let msg = '';
+    if (moves <= pairCount * 2) msg = `Fantastisch! Du hast alle Paare in ${timeStr} Minuten mit nur ${moves} Zügen gefunden!`;
+    else if (moves <= pairCount * 3) msg = `Sehr gut! ${pairCount} Paare in ${timeStr} – du hast ein gutes Gedächtnis!`;
+    else msg = `Geschafft! Alle Paare in ${timeStr} gefunden. Mit mehr Übung wird es noch schneller!`;
+    document.getElementById('memResultMsg').textContent = msg;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aurubis Lernspiele – Deutsch lernen mit Aurubis</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Stats strip */
+    .stats-strip {
+      background: var(--aurubis-white);
+      border-bottom: 1px solid var(--aurubis-grey-mid);
+      padding: 10px 24px;
+    }
+    .stats-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      font-size: 13px;
+    }
+    .stat-item { display: flex; align-items: center; gap: 6px; color: var(--aurubis-grey); }
+    .stat-item .num { color: var(--aurubis-orange); font-weight: 700; }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    @media (max-width: 640px) {
+      .about-grid { grid-template-columns: 1fr; }
+      .stats-inner { flex-wrap: wrap; gap: 16px; }
+    }
+    .about-card {
+      background: var(--aurubis-white);
+      border-radius: 10px;
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+      border-top: 3px solid var(--aurubis-orange);
+    }
+    .about-card h4 { color: var(--aurubis-blue); font-size: 15px; margin-bottom: 8px; font-weight: 700; }
+    .about-card p { font-size: 14px; color: var(--aurubis-grey); line-height: 1.7; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo-area">
+      <div class="logo-icon">Au</div>
+      <div class="logo-text">
+        <span class="brand">Aurubis Lernspiele</span>
+        <span class="tagline">Deutsch lernen mit Kupfer</span>
+      </div>
+    </a>
+    <nav class="header-nav">
+      <a href="index.html" class="active">Startseite</a>
+      <a href="quiz.html">Quiz</a>
+      <a href="memory.html">Memory</a>
+      <a href="wordsearch.html">Wortsuche</a>
+      <a href="lueckentext.html">Lückentext</a>
+    </nav>
+  </div>
+</header>
+<div class="accent-bar"></div>
+
+<section class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-item">🎮 <span class="num">4</span> Spiele</div>
+    <div class="stat-item">📚 <span class="num">25+</span> Fachbegriffe</div>
+    <div class="stat-item">🏭 Thema: <strong>Kupferproduktion</strong></div>
+    <div class="stat-item">🌍 Niveau: <strong>B1 – B2</strong></div>
+  </div>
+</section>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Interaktives Lernen</div>
+    <h1>Deutsch lernen mit<br/><span>Aurubis</span></h1>
+    <p>Entdecke die Welt der Kupferproduktion – und lerne dabei wichtige deutsche Fachbegriffe aus der Industrie kennen.</p>
+  </div>
+</section>
+
+<main>
+  <p class="section-title">Wähle ein Spiel</p>
+  <p class="section-subtitle">Alle Spiele sind kostenlos und erfordern keine Anmeldung. Klicke auf eine Karte, um zu beginnen.</p>
+
+  <div class="games-grid">
+
+    <a href="quiz.html" class="game-card">
+      <div class="game-card-header">
+        <div class="game-icon">🧠</div>
+        <div>
+          <h3>Vokabel-Quiz</h3>
+          <p>Multiple Choice</p>
+        </div>
+      </div>
+      <div class="game-card-body">
+        <p>Wähle die richtige deutsche Übersetzung oder Definition für Aurubis-Fachbegriffe. Mit sofortigem Feedback und Erklärungen.</p>
+      </div>
+      <div class="game-card-footer">
+        <div class="game-difficulty">
+          <div class="dot filled"></div>
+          <div class="dot filled"></div>
+          <div class="dot"></div>
+          <span style="font-size:12px; color:var(--aurubis-grey); margin-left:6px;">Mittel</span>
+        </div>
+        <span class="play-btn">Spielen →</span>
+      </div>
+    </a>
+
+    <a href="memory.html" class="game-card">
+      <div class="game-card-header">
+        <div class="game-icon">🃏</div>
+        <div>
+          <h3>Memory</h3>
+          <p>Begriffe zuordnen</p>
+        </div>
+      </div>
+      <div class="game-card-body">
+        <p>Finde zusammengehörige Paare: Deutsche Fachbegriffe und ihre Definitionen oder englischen Entsprechungen.</p>
+      </div>
+      <div class="game-card-footer">
+        <div class="game-difficulty">
+          <div class="dot filled"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <span style="font-size:12px; color:var(--aurubis-grey); margin-left:6px;">Einfach</span>
+        </div>
+        <span class="play-btn">Spielen →</span>
+      </div>
+    </a>
+
+    <a href="wordsearch.html" class="game-card">
+      <div class="game-card-header">
+        <div class="game-icon">🔍</div>
+        <div>
+          <h3>Wortsuche</h3>
+          <p>Begriffe im Raster finden</p>
+        </div>
+      </div>
+      <div class="game-card-body">
+        <p>Suche und markiere versteckte Aurubis-Fachbegriffe in einem Buchstabenraster – horizontal, vertikal und diagonal.</p>
+      </div>
+      <div class="game-card-footer">
+        <div class="game-difficulty">
+          <div class="dot filled"></div>
+          <div class="dot filled"></div>
+          <div class="dot filled"></div>
+          <span style="font-size:12px; color:var(--aurubis-grey); margin-left:6px;">Schwer</span>
+        </div>
+        <span class="play-btn">Spielen →</span>
+      </div>
+    </a>
+
+    <a href="lueckentext.html" class="game-card">
+      <div class="game-card-header">
+        <div class="game-icon">✏️</div>
+        <div>
+          <h3>Lückentext</h3>
+          <p>Sätze vervollständigen</p>
+        </div>
+      </div>
+      <div class="game-card-body">
+        <p>Fülle Lücken in authentischen Texten über Aurubis und die Kupferproduktion aus. Lerne Wörter im Kontext.</p>
+      </div>
+      <div class="game-card-footer">
+        <div class="game-difficulty">
+          <div class="dot filled"></div>
+          <div class="dot filled"></div>
+          <div class="dot"></div>
+          <span style="font-size:12px; color:var(--aurubis-grey); margin-left:6px;">Mittel</span>
+        </div>
+        <span class="play-btn">Spielen →</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="copper-line"></div>
+
+  <p class="section-title">Über Aurubis AG</p>
+  <p class="section-subtitle">Hintergrundinformationen für dein Lernen</p>
+
+  <div class="info-box">
+    <strong>Aurubis AG</strong> ist einer der weltweit führenden Kupferproduzenten mit Hauptsitz in <strong>Hamburg</strong>, Deutschland.
+    Das Unternehmen verarbeitet sowohl Primärrohstoffe (Kupfererze und Konzentrate) als auch Sekundärrohstoffe
+    (Kupferschrott und -recyclingmaterial) zu hochreinen Kupferprodukten wie Kathoden, Draht und Speziallegierungen.
+    Aurubis ist bekannt für sein starkes Engagement in <strong>Nachhaltigkeit</strong> und <strong>Kreislaufwirtschaft</strong>.
+  </div>
+
+  <div class="about-grid">
+    <div class="about-card">
+      <h4>🏭 Produktion</h4>
+      <p>Aurubis produziert jährlich über 1 Million Tonnen Kupferkathoden. Die Produktion erfolgt in mehreren Schritten: Schmelzen, Raffinierung, Elektrolyse und Gießen.</p>
+    </div>
+    <div class="about-card">
+      <h4>♻️ Recycling</h4>
+      <p>Kupfer ist zu 100 % recycelbar. Aurubis verarbeitet große Mengen an Kupferschrott und ist damit ein wichtiger Akteur in der europäischen Kreislaufwirtschaft.</p>
+    </div>
+    <div class="about-card">
+      <h4>🌍 Nachhaltigkeit</h4>
+      <p>Aurubis investiert kontinuierlich in Energieeffizienz, Emissionsreduzierung und die Nutzung von Abwärme für Fernwärmesysteme.</p>
+    </div>
+    <div class="about-card">
+      <h4>📍 Standorte</h4>
+      <p>Neben Hamburg hat Aurubis Werke in Lünen, Pirdop (Bulgarien), Olen (Belgien), Buffalo (USA) und weiteren Standorten weltweit.</p>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <p>Aurubis Lernspiele – Erstellt zu Bildungszwecken &nbsp;|&nbsp; <a href="https://www.aurubis.com" target="_blank" rel="noopener">aurubis.com</a></p>
+</footer>
+
+</body>
+</html>
